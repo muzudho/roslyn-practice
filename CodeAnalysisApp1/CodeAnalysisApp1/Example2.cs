@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -55,8 +56,8 @@ namespace CodeAnalysisApp1
                                 //public int beforeChapterId;
 
                                 // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
-                                var (declaration, modifiers, summary) = ParseField(fieldDeclaration);
-                                builder.AppendLine($"{declaration},{modifiers},{summary}");
+                                var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
+                                builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
                             }
                             break;
                     }
@@ -73,10 +74,23 @@ namespace CodeAnalysisApp1
 
         }
 
-        static (string, string, string) ParseField(FieldDeclarationSyntax fieldDeclaration)
+        static (string, string, string, string) ParseField(FieldDeclarationSyntax fieldDeclaration)
         {
             var declaration = fieldDeclaration.Declaration;
             // Declaration:         int beforeChapterId
+
+            // 連続する空白を１つにしてみる
+            // 📖 [Replace consecutive whitespace characters with a single space in C#](https://www.techiedelight.com/replace-consecutive-whitespace-by-single-space-csharp/)
+            var declarationText = Regex.Replace(declaration.ToString(), @"\s+", " ");
+
+            // とりあえず半角スペースで区切ってみるか
+            string[] list = declarationText.ToString().Split(' ');
+
+            var declarationHead = new string[list.Length - 1];
+            Array.Copy(list, 0, declarationHead, 0, list.Length - 1);
+            string declarationHeadText = String.Join(" ", declarationHead);
+            var name = list[list.Length - 1];
+
 
             var modifiers = fieldDeclaration.Modifiers;
             // Modifiers:           public
@@ -118,7 +132,7 @@ namespace CodeAnalysisApp1
 
             summaryText = summaryText.Replace("\r\n", "\\n");
 
-            return (declaration.ToString(), modifiers.ToString(), summaryText);
+            return (modifiers.ToString(), declarationHeadText, name, summaryText);
         }
     }
 }
