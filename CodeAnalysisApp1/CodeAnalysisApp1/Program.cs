@@ -3,15 +3,19 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CodeAnalysisApp1
 {
@@ -252,6 +256,63 @@ namespace HelloWorld
                         //
                         // ドキュメント・コメントをうまく取る方法が無くないか？
                         //
+                        // 📖 [How to read XML documentation comments using Roslyn](https://stackoverflow.com/questions/15763827/how-to-read-xml-documentation-comments-using-roslyn)
+                        //
+                        //var parentTrivia = fieldDeclaration.ParentTrivia;
+                        //Console.WriteLine($"parentTrivia.ToFullString: {parentTrivia.ToFullString()}");
+
+                        var leadingTrivia = fieldDeclaration.GetLeadingTrivia();
+                        Console.WriteLine($"leadingTrivia: {leadingTrivia}");
+                        //leadingTrivia:         /// <summary>
+                        //                       /// ?? 章Idの前に
+                        //                       /// </summary>
+
+                        //
+                        // XML の部分だけ取りたいが……
+                        //
+                        //foreach(var line in leadingTrivia.ToSyntaxTriviaList())
+                        //{
+                        //    Console.WriteLine($"leadingTrivia line: {line}");
+                        //}
+
+                        //foreach (var element in leadingTrivia.ToList())
+                        //{
+                        //    Console.WriteLine($"leadingTrivia element: {element}");
+                        //}
+
+
+                        //// 📖 [Analyzing XML Comments in your Roslyn Code Analyzer](https://johnkoerner.com/csharp/analyzing-xml-comments-in-your-roslyn-code-analyzer/)
+                        //var xmlTrivia = leadingTrivia
+                        //        .Select(i => i.GetStructure())
+                        //        .OfType<DocumentationCommentTriviaSyntax>()
+                        //        .FirstOrDefault();
+
+                        //var hasSummary = xmlTrivia.ChildNodes()
+                        //    .OfType<XmlElementSyntax>()
+                        //    .Any(i => i.StartTag.Name.ToString().Equals("summary"));
+
+                        //if (hasSummary)
+                        //{
+                        //    Console.WriteLine($"xmlTrivia: {xmlTrivia}");
+                        //}
+                        ////            xmlTrivia:  < summary >
+                        /////// ?? 章Idの前に
+                        /////// </summary>
+                        /////
+
+                        var documentComment = leadingTrivia.ToFullString();
+                        var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                        foreach(var line in documentCommentLines)
+                        {
+                            Console.WriteLine($"documentComment line: {line}");
+
+                            var match = Regex.Match(line, @"\s*/// ?(.*)");
+                            if (match.Success)
+                            {
+                                var content = match.Groups[1];
+                                Console.WriteLine($"documentComment line content: {content}");
+                            }
+                        }
                     }
                     break;
             }
