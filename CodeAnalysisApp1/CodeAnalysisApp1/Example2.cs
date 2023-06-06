@@ -33,6 +33,8 @@ namespace CodeAnalysisApp1
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
             var builder = new StringBuilder();
+            // ヘッダー
+            builder.AppendLine("Access,Type,Name,Summary");
 
             foreach (var rootMember in root.Members)
             {
