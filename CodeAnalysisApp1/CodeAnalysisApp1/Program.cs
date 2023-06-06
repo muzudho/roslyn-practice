@@ -74,22 +74,13 @@ namespace HelloWorld
             // The tree has 1 elements in it.
 
             //
-            // Using 句の数
+            // Using 句解析
             //
-            Console.WriteLine($"The tree has {root.Usings.Count} using statements. They are:");
-            // The tree has 4 using statements.They are:
+            Console.WriteLine(StringifyUsingStatements(root));
 
-            // 根にぶら下がっている Using 句を出力
-            foreach (UsingDirectiveSyntax element in root.Usings)
-            {
-                Console.WriteLine($"\t{element.Name}");
-            }
-            // System
-            // System.Collections
-            // System.Linq
-            // System.Text
-
+            //
             // 根にぶら下がっている最初のものの種類
+            //
             MemberDeclarationSyntax firstMember = root.Members[0];
             Console.WriteLine($"The first member is a {firstMember.Kind()}.");
             // The first member is a NamespaceDeclaration.
@@ -98,6 +89,8 @@ namespace HelloWorld
 
             //
             var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
+            //
+            // そのメソッド数
             Console.WriteLine($"There are {programDeclaration.Members.Count} members declared in the {programDeclaration.Identifier} class.");
             // There are 1 members declared in the Program class.
 
@@ -143,6 +136,34 @@ namespace HelloWorld
             // }
 
             var argsParameter = mainDeclaration.ParameterList.Parameters[0];
+        }
+
+        /// <summary>
+        /// Using 句解析
+        /// </summary>
+        /// <param name="root">根要素</param>
+        /// <returns>結果文字列</returns>
+        static string StringifyUsingStatements(CompilationUnitSyntax root)
+        {
+            var builder = new StringBuilder();
+
+            //
+            // Using 句の数
+            //
+            builder.AppendLine($"The tree has {root.Usings.Count} using statements. They are:");
+            // The tree has 4 using statements.They are:
+
+            // 根にぶら下がっている Using 句を出力
+            foreach (UsingDirectiveSyntax element in root.Usings)
+            {
+                builder.AppendLine($"\t{element.Name}");
+            }
+            // System
+            // System.Collections
+            // System.Linq
+            // System.Text
+
+            return builder.ToString();
         }
     }
 }
