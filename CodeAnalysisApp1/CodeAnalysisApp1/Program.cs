@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml;
 
 namespace CodeAnalysisApp1
 {
@@ -300,6 +301,7 @@ namespace HelloWorld
                         /////// </summary>
                         /////
 
+                        var documentCommentBuilder = new StringBuilder();
                         var documentComment = leadingTrivia.ToFullString();
                         var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
                         foreach(var line in documentCommentLines)
@@ -311,8 +313,29 @@ namespace HelloWorld
                             {
                                 var content = match.Groups[1];
                                 Console.WriteLine($"documentComment line content: {content}");
+                                documentCommentBuilder.AppendLine(content.ToString());
                             }
                         }
+                        var documentCommentText = documentCommentBuilder.ToString();
+                        Console.WriteLine($"documentCommentText: {documentCommentText}");
+                        //documentCommentText: < summary >
+                        //?? 章Idの前に
+                        //</ summary >
+
+                        //
+                        // XMLパーサーが欲しい
+                        //
+                        // 📖 [How do I read and parse an XML file in C#?](https://stackoverflow.com/questions/642293/how-do-i-read-and-parse-an-xml-file-in-c)
+                        //
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(documentCommentText);
+
+                        XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
+                        string summaryText = summaryNode.InnerText;
+                        Console.WriteLine($"summaryText: {summaryText}");
+                        //                    summaryText:
+                        //?? 章Idの前に
+
                     }
                     break;
             }
