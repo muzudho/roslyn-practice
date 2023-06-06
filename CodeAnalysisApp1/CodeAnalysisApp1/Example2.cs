@@ -35,28 +35,30 @@ namespace CodeAnalysisApp1
             {
                 var helloWorldDeclaration = (NamespaceDeclarationSyntax)rootMember;
                 var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
-                var programDeclarationMember = programDeclaration.Members[0];
 
-                switch (programDeclarationMember.Kind())
+                foreach (var programDeclarationMember in programDeclaration.Members)
                 {
-                    // フィールドの宣言部なら
-                    case SyntaxKind.FieldDeclaration:
-                        {
-                            //
-                            // プログラム中の宣言メンバーの１つ目
-                            //
-                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                            //            fullString:         /// <summary>
-                            //                                /// ?? 章Idの前に
-                            //                                /// </summary>
-                            //public int beforeChapterId;
+                    switch (programDeclarationMember.Kind())
+                    {
+                        // フィールドの宣言部なら
+                        case SyntaxKind.FieldDeclaration:
+                            {
+                                //
+                                // プログラム中の宣言メンバーの１つ目
+                                //
+                                var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                                //            fullString:         /// <summary>
+                                //                                /// ?? 章Idの前に
+                                //                                /// </summary>
+                                //public int beforeChapterId;
 
-                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
-                            var (declaration, modifiers, summary) = ParseField(fieldDeclaration);
-                            Console.WriteLine($"{declaration},{modifiers},{summary}");
+                                // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                                var (declaration, modifiers, summary) = ParseField(fieldDeclaration);
+                                Console.WriteLine($"{declaration},{modifiers},{summary}");
 
-                        }
-                        break;
+                            }
+                            break;
+                    }
                 }
             }
         }
