@@ -31,6 +31,8 @@ namespace CodeAnalysisApp1
                 encoding: Encoding.UTF8);
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
+            var builder = new StringBuilder();
+
             foreach (var rootMember in root.Members)
             {
                 var helloWorldDeclaration = (NamespaceDeclarationSyntax)rootMember;
@@ -54,13 +56,21 @@ namespace CodeAnalysisApp1
 
                                 // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
                                 var (declaration, modifiers, summary) = ParseField(fieldDeclaration);
-                                Console.WriteLine($"{declaration},{modifiers},{summary}");
-
+                                builder.AppendLine($"{declaration},{modifiers},{summary}");
                             }
                             break;
                     }
                 }
             }
+
+            Console.WriteLine(builder.ToString());
+
+            // ファイルへの書き出し
+            var savePath = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                "CodeAnalysisApp1/document-comments.csv");
+            File.WriteAllText(savePath, builder.ToString(), Encoding.UTF8);
+
         }
 
         static (string, string, string) ParseField(FieldDeclarationSyntax fieldDeclaration)
