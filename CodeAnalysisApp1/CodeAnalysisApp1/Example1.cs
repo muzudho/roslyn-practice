@@ -15,7 +15,6 @@ namespace CodeAnalysisApp1
         {
             // 読込対象のテキスト
             string programText = Example1.ReadTextFile();
-            // string programText = Example1.GetExample();
 
             //
             // テキストをパースして、ツリー作成
