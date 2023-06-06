@@ -30,30 +30,34 @@ namespace CodeAnalysisApp1
                 text: programText,
                 encoding: Encoding.UTF8);
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-            MemberDeclarationSyntax firstMember = root.Members[0];
-            var helloWorldDeclaration = (NamespaceDeclarationSyntax)firstMember;
-            var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
 
-            switch (programDeclaration.Members[0].Kind())
+            foreach (var rootMember in root.Members)
             {
-                // フィールドの宣言部なら
-                case SyntaxKind.FieldDeclaration:
-                    {
-                        //
-                        // プログラム中の宣言メンバーの１つ目
-                        //
-                        var fieldDeclaration = (FieldDeclarationSyntax)programDeclaration.Members[0];
-                        //            fullString:         /// <summary>
-                        //                                /// ?? 章Idの前に
-                        //                                /// </summary>
-                        //public int beforeChapterId;
+                var helloWorldDeclaration = (NamespaceDeclarationSyntax)rootMember;
+                var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
+                var programDeclarationMember = programDeclaration.Members[0];
 
-                        // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
-                        var (declaration, modifiers, summary) = ParseField(fieldDeclaration);
-                        Console.WriteLine($"{declaration},{modifiers},{summary}");
+                switch (programDeclarationMember.Kind())
+                {
+                    // フィールドの宣言部なら
+                    case SyntaxKind.FieldDeclaration:
+                        {
+                            //
+                            // プログラム中の宣言メンバーの１つ目
+                            //
+                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                            //            fullString:         /// <summary>
+                            //                                /// ?? 章Idの前に
+                            //                                /// </summary>
+                            //public int beforeChapterId;
 
-                    }
-                    break;
+                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                            var (declaration, modifiers, summary) = ParseField(fieldDeclaration);
+                            Console.WriteLine($"{declaration},{modifiers},{summary}");
+
+                        }
+                        break;
+                }
             }
         }
 
