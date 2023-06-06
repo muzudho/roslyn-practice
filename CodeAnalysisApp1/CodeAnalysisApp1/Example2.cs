@@ -13,14 +13,14 @@ namespace CodeAnalysisApp1
     internal class Example2
     {
         internal static void DoIt(
-            string filePath)
+            string readFilePath)
         {
             // コンソールに出力すると文字化けするのは、コンソールの方のエンコーディング設定（コードページ）が悪い
             // 📖 [How to get CMD/console encoding in C#](https://stackoverflow.com/questions/5910573/how-to-get-cmd-console-encoding-in-c-sharp)
             Console.OutputEncoding = Encoding.UTF8; // これでも絵文字は表示されない
 
             // 読込対象のテキスト
-            string programText = File.ReadAllText(filePath, Encoding.UTF8);
+            string programText = File.ReadAllText(readFilePath, Encoding.UTF8);
 
             //
             // テキストをパースして、ツリー作成
@@ -66,10 +66,13 @@ namespace CodeAnalysisApp1
 
             Console.WriteLine(builder.ToString());
 
+            //
             // ファイルへの書き出し
+            //
+            var saveFileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(readFilePath);
             var savePath = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                "CodeAnalysisApp1/document-comments.csv");
+                $"CodeAnalysisApp1/{saveFileNameWithoutExtension}.csv");
             File.WriteAllText(savePath, builder.ToString(), Encoding.UTF8);
 
         }

@@ -1,4 +1,6 @@
-﻿namespace CodeAnalysisApp1
+﻿using System.Collections.Generic;
+
+namespace CodeAnalysisApp1
 {
     internal class Program
     {
@@ -6,11 +8,16 @@
         {
             // Example1.DoIt();
 
-            // ファイルパス
-            var filePath = "C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\JsonStructure\\ChapterJson.cs";
+            // ファイルパスのリスト
+            List<string> filePathList = new List<string>
+            {
+                "C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\JsonStructure\\ChapterJson.cs",
+            };
 
-            Example2.DoIt(filePath);
-
+            foreach (var filePath in filePathList)
+            {
+                Example2.DoIt(filePath);
+            }
         }
     }
 }
