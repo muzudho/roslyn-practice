@@ -37,34 +37,79 @@ namespace CodeAnalysisApp1
             foreach (var rootMember in root.Members)
             {
                 var helloWorldDeclaration = (NamespaceDeclarationSyntax)rootMember;
-                var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
 
-                foreach (var programDeclarationMember in programDeclaration.Members)
+                // 先頭メンバー
+                switch (helloWorldDeclaration.Members[0].Kind())
                 {
-                    switch (programDeclarationMember.Kind())
-                    {
-                        // フィールドの宣言部なら
-                        case SyntaxKind.FieldDeclaration:
-                            {
-                                //
-                                // プログラム中の宣言メンバーの１つ目
-                                //
-                                var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                                //            fullString:         /// <summary>
-                                //                                /// ?? 章Idの前に
-                                //                                /// </summary>
-                                //public int beforeChapterId;
+                    case SyntaxKind.ClassDeclaration:
+                        {
+                            var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
 
-                                // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
-                                var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
+                            foreach (var programDeclarationMember in programDeclaration.Members)
+                            {
+                                switch (programDeclarationMember.Kind())
+                                {
+                                    // フィールドの宣言部なら
+                                    case SyntaxKind.FieldDeclaration:
+                                        {
+                                            //
+                                            // プログラム中の宣言メンバーの１つ目
+                                            //
+                                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                                            //            fullString:         /// <summary>
+                                            //                                /// ?? 章Idの前に
+                                            //                                /// </summary>
+                                            //public int beforeChapterId;
+
+                                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                                            var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
+                                            builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
+                                        }
+                                        break;
+                                }
                             }
-                            break;
-                    }
+                        }
+                        break;
+
+                    case SyntaxKind.InterfaceDeclaration:
+                        {
+                            var programDeclaration = (InterfaceDeclarationSyntax)helloWorldDeclaration.Members[0];
+
+                            foreach (var programDeclarationMember in programDeclaration.Members)
+                            {
+                                switch (programDeclarationMember.Kind())
+                                {
+                                    // フィールドの宣言部なら
+                                    case SyntaxKind.FieldDeclaration:
+                                        {
+                                            //
+                                            // プログラム中の宣言メンバーの１つ目
+                                            //
+                                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                                            //            fullString:         /// <summary>
+                                            //                                /// ?? 章Idの前に
+                                            //                                /// </summary>
+                                            //public int beforeChapterId;
+
+                                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                                            var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
+                                            builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                        break;
+
+                    default:
+                        break;
                 }
             }
 
-            Console.WriteLine(builder.ToString());
+            var csvContent = builder.ToString();
+
+            Console.WriteLine($@"{readFilePath}
+{csvContent}");
 
             //
             // ファイルへの書き出し
@@ -73,7 +118,7 @@ namespace CodeAnalysisApp1
             var savePath = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
                 $"CodeAnalysisApp1/{saveFileNameWithoutExtension}.csv");
-            File.WriteAllText(savePath, builder.ToString(), Encoding.UTF8);
+            File.WriteAllText(savePath, csvContent, Encoding.UTF8);
 
         }
 
