@@ -70,6 +70,14 @@ namespace CodeAnalysisApp1
                                         }
                                         break;
 
+
+                                    // TODO ★ サブ列挙型
+                                    case SyntaxKind.EnumDeclaration:
+                                        {
+
+                                        }
+                                        break;
+
                                     default:
                                         break;
                                 }
