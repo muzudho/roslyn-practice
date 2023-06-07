@@ -63,8 +63,8 @@
             foreach (var entry in targetFileDictionary)
             {
                 TheExample2.Example2.DoIt(
-                    readFilePath: entry.Key,
-                    saveFolderName: entry.Value);
+                    filePathToRead: entry.Key,
+                    folderNameToSave: entry.Value);
             }
         }
     }

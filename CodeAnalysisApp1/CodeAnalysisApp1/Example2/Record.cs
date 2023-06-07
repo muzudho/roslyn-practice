@@ -39,7 +39,7 @@
             return EscapeCSV(list);
         }
 
-        static string EscapeCSV(List<string> values)
+        internal static string EscapeCSV(List<string> values)
         {
             var escapedValues = new List<string>();
 

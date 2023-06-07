@@ -4,6 +4,7 @@
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -13,15 +14,15 @@
     internal class Example2
     {
         internal static void DoIt(
-            string readFilePath,
-            string saveFolderName)
+            string filePathToRead,
+            string folderNameToSave)
         {
             // コンソールに出力すると文字化けするのは、コンソールの方のエンコーディング設定（コードページ）が悪い
             // 📖 [How to get CMD/console encoding in C#](https://stackoverflow.com/questions/5910573/how-to-get-cmd-console-encoding-in-c-sharp)
             Console.OutputEncoding = Encoding.UTF8; // これでも絵文字は表示されない
 
             // 読込対象のテキスト
-            string programText = File.ReadAllText(readFilePath, Encoding.UTF8);
+            string programText = File.ReadAllText(filePathToRead, Encoding.UTF8);
 
             //
             // テキストをパースして、ツリー作成
@@ -33,10 +34,7 @@
                 encoding: Encoding.UTF8);
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
-
-            var builder = new StringBuilder();
-            // ヘッダー
-            builder.AppendLine("Type,Access,MemberType,Name,Value,Summary");
+            var recordExList = new List<RecordEx>();
 
             foreach (var rootMember in root.Members)
             {
@@ -52,8 +50,9 @@
                                 ParseClassDeclaration(
                                     setRecord: (record) =>
                                     {
-                                        // CSV
-                                        builder.AppendLine(record.ToCSV());
+                                        recordExList.Add(new RecordEx(
+                                            recordObj: record,
+                                            filePathToRead: filePathToRead));
                                     },
                                     @namespace: namespaceDeclaration.Name.ToString(),
                                     programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
@@ -80,11 +79,12 @@
                                                 //                                /// </summary>
                                                 //public int beforeChapterId;
 
-                                                // CSV
                                                 var record = ParseField(
                                                     fieldDeclaration: fieldDeclaration,
                                                     @namespace: namespaceDeclaration.Name.ToString());
-                                                builder.AppendLine(record.ToCSV());
+                                                recordExList.Add(new RecordEx(
+                                                    recordObj: record,
+                                                    filePathToRead: filePathToRead));
                                             }
                                             break;
 
@@ -100,8 +100,9 @@
                                 ParseEnumDeclaration(
                                     setRecord: (record) =>
                                     {
-                                        // CSV
-                                        builder.AppendLine(record.ToCSV());
+                                        recordExList.Add(new RecordEx(
+                                            recordObj: record,
+                                            filePathToRead: filePathToRead));
                                     },
                                     @namespace: string.Empty,
                                     programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
@@ -114,9 +115,19 @@
                 }
             }
 
+            var builder = new StringBuilder();
+            // ヘッダー
+            builder.AppendLine("FilePathToRead,Type,Access,MemberType,Name,Value,Summary");
+
+            foreach (var recordEx in recordExList)
+            {
+                // CSV
+                builder.AppendLine(recordEx.ToCSV());
+            }
+
             var csvContent = builder.ToString();
 
-            Console.WriteLine($@"{readFilePath}
+            Console.WriteLine($@"{filePathToRead}
 {csvContent}");
 
             //
@@ -128,7 +139,7 @@
                 Directory.CreateDirectory(targetDirectory);
             }
 
-            targetDirectory = Path.Combine(targetDirectory, saveFolderName);
+            targetDirectory = Path.Combine(targetDirectory, folderNameToSave);
             if (!Directory.Exists(targetDirectory))
             {
                 Directory.CreateDirectory(targetDirectory);
@@ -137,7 +148,7 @@
             //
             // ファイルへの書き出し
             //
-            var saveFileNameWithoutExtension = Path.GetFileNameWithoutExtension(readFilePath);
+            var saveFileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePathToRead);
             var savePath = Path.Combine(
                 targetDirectory,
                 $"{saveFileNameWithoutExtension}.csv");
