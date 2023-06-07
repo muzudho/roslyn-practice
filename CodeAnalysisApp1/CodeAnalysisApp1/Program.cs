@@ -22,8 +22,8 @@ namespace CodeAnalysisApp1
             // 出力先フォルダー名と、ディレクトリー・パスの辞書
             var directoryMap = new Dictionary<string, string>()
             {
-                {"📂Knowledge📂Enum", @"C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\Enum" },
-                {"📂Knowledge📂JsonStructure", @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research-Project\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure" },
+                {"😁RMU 1.00.00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂Enum", @"C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\Enum" },
+                {"😁RMU 1.00.00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂JsonStructure", @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research-Project\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure" },
             };
 
             // C# ファイルへのパス一覧

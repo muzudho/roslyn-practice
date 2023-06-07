@@ -69,6 +69,9 @@ namespace CodeAnalysisApp1
                                             builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
                                         }
                                         break;
+
+                                    default:
+                                        break;
                                 }
                             }
                         }
@@ -98,6 +101,38 @@ namespace CodeAnalysisApp1
                                             var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
                                             builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
                                         }
+                                        break;
+
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                        break;
+
+                    case SyntaxKind.EnumDeclaration:
+                        {
+                            var programDeclaration = (EnumDeclarationSyntax)helloWorldDeclaration.Members[0];
+
+                            foreach (var programDeclarationMember in programDeclaration.Members)
+                            {
+                                switch (programDeclarationMember.Kind())
+                                {
+                                    // フィールドの宣言部なら
+                                    case SyntaxKind.EnumMemberDeclaration:
+                                        {
+                                            //
+                                            // プログラム中の宣言メンバーの１つ目
+                                            //
+                                            var fieldDeclaration = (EnumMemberDeclarationSyntax)programDeclarationMember;
+
+                                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                                            var (modifiers, identifierText, summary) = ParseField(fieldDeclaration);
+                                            builder.AppendLine($"{modifiers},,{identifierText},{summary}");
+                                        }
+                                        break;
+
+                                    default:
                                         break;
                                 }
                             }
@@ -140,8 +175,16 @@ namespace CodeAnalysisApp1
 
         }
 
+        /// <summary>
+        /// class, interface のフィールド用
+        /// </summary>
+        /// <param name="fieldDeclaration"></param>
+        /// <returns></returns>
         static (string, string, string, string) ParseField(FieldDeclarationSyntax fieldDeclaration)
         {
+            var modifiers = fieldDeclaration.Modifiers;
+            // Modifiers:           public
+
             var declaration = fieldDeclaration.Declaration;
             // Declaration:         int beforeChapterId
 
@@ -157,9 +200,6 @@ namespace CodeAnalysisApp1
             string declarationHeadText = String.Join(" ", declarationHead);
             var name = list[list.Length - 1];
 
-
-            var modifiers = fieldDeclaration.Modifiers;
-            // Modifiers:           public
 
             var leadingTrivia = fieldDeclaration.GetLeadingTrivia();
             //leadingTrivia:         /// <summary>
@@ -196,9 +236,58 @@ namespace CodeAnalysisApp1
             //                    summaryText:
             //?? 章Idの前に
 
-            summaryText = summaryText.Replace("\r\n", "\\n");
+            summaryText = summaryText.Replace("\r\n", "\\r\\n");
 
             return (modifiers.ToString(), declarationHeadText, name, summaryText);
+        }
+
+        /// <summary>
+        /// enum 型のメンバー用
+        /// </summary>
+        /// <param name="enumMemberDeclaration"></param>
+        /// <returns></returns>
+        static (string, string, string) ParseField(EnumMemberDeclarationSyntax enumMemberDeclaration)
+        {
+            var modifiers = enumMemberDeclaration.Modifiers;
+            // Modifiers:           public
+
+            var identifierText = enumMemberDeclaration.Identifier.ToString();
+
+            var leadingTrivia = enumMemberDeclaration.GetLeadingTrivia();
+            //leadingTrivia:         /// <summary>
+            //                       /// ?? 章Idの前に
+            //                       /// </summary>
+
+            var documentCommentBuilder = new StringBuilder();
+            var documentComment = leadingTrivia.ToFullString();
+            var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+            foreach (var line in documentCommentLines)
+            {
+                var match = Regex.Match(line, @"\s*/// ?(.*)");
+                if (match.Success)
+                {
+                    var content = match.Groups[1];
+                    documentCommentBuilder.AppendLine(content.ToString());
+                }
+            }
+            var documentCommentText = documentCommentBuilder.ToString();
+
+            //
+            // XMLパーサーが欲しい
+            //
+            // 📖 [How do I read and parse an XML file in C#?](https://stackoverflow.com/questions/642293/how-do-i-read-and-parse-an-xml-file-in-c)
+            //
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(documentCommentText);
+
+            XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
+            string summaryText = summaryNode.InnerText;
+            //                    summaryText:
+            //?? 章Idの前に
+
+            summaryText = summaryText.Replace("\r\n", "\\r\\n");
+
+            return (modifiers.ToString(), identifierText, summaryText);
         }
     }
 }
