@@ -129,15 +129,8 @@ namespace CodeAnalysisApp1
                                                 //public int beforeChapterId;
 
                                                 // CSV
-                                                var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-
-                                                builder.AppendLine(new Record(
-                                                    type: string.Empty,
-                                                    access: modifiers,
-                                                    memberType: declarationHead,
-                                                    name: name,
-                                                    value: string.Empty,
-                                                    summary: summary).ToCSV());
+                                                var record = ParseField(fieldDeclaration);
+                                                builder.AppendLine(record.ToCSV());
                                             }
                                             break;
 
@@ -181,15 +174,8 @@ namespace CodeAnalysisApp1
                                                 //public int beforeChapterId;
 
                                                 // CSV
-                                                var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-
-                                                builder.AppendLine(new Record(
-                                                    type: string.Empty,
-                                                    access: modifiers,
-                                                    memberType: declarationHead,
-                                                    name: name,
-                                                    value: string.Empty,
-                                                    summary: summary).ToCSV());
+                                                var record = ParseField(fieldDeclaration);
+                                                builder.AppendLine(record.ToCSV());
                                             }
                                             break;
 
@@ -264,15 +250,8 @@ namespace CodeAnalysisApp1
                             var fieldDeclaration = (EnumMemberDeclarationSyntax)programDeclarationMember;
 
                             // CSV
-                            var (modifiers, identifierText, enumValue, summary) = ParseField(fieldDeclaration);
-
-                            builder.AppendLine(new Record(
-                                type: @namespace,
-                                access: modifiers,
-                                memberType: string.Empty,
-                                name: identifierText,
-                                value: enumValue,
-                                summary: summary).ToCSV());
+                            var record = ParseField(fieldDeclaration, @namespace);
+                            builder.AppendLine(record.ToCSV());
                         }
                         break;
 
@@ -289,7 +268,7 @@ namespace CodeAnalysisApp1
         /// </summary>
         /// <param name="fieldDeclaration"></param>
         /// <returns></returns>
-        static (string, string, string, string) ParseField(FieldDeclarationSyntax fieldDeclaration)
+        static Record ParseField(FieldDeclarationSyntax fieldDeclaration)
         {
             //
             // モディファイア
@@ -377,7 +356,13 @@ namespace CodeAnalysisApp1
 
             summaryText = summaryText.Replace("\r\n", "\\r\\n");
 
-            return (modifiers.ToString(), declarationHeadText, name, summaryText);
+            return new Record(
+                type: string.Empty,
+                access: modifiers.ToString(),
+                memberType: declarationHeadText,
+                name: name,
+                value: string.Empty,
+                summary: summaryText);
         }
 
         /// <summary>
@@ -385,7 +370,7 @@ namespace CodeAnalysisApp1
         /// </summary>
         /// <param name="enumMemberDeclaration"></param>
         /// <returns></returns>
-        static (string, string, string, string) ParseField(EnumMemberDeclarationSyntax enumMemberDeclaration)
+        static Record ParseField(EnumMemberDeclarationSyntax enumMemberDeclaration, string @namespace)
         {
             var modifiers = enumMemberDeclaration.Modifiers;
             // Modifiers:           public
@@ -456,7 +441,13 @@ namespace CodeAnalysisApp1
 
             summaryText = summaryText.Replace("\r\n", "\\r\\n");
 
-            return (modifiers.ToString(), identifierText, enumValue, summaryText);
+            return new Record(
+                type: @namespace,
+                access: modifiers.ToString(),
+                memberType: string.Empty,
+                name: identifierText,
+                value: enumValue,
+                summary: summaryText);
         }
     }
 }
