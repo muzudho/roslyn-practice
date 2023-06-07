@@ -34,13 +34,16 @@
 
             //*
             //
-            // 出力先CSVファイル名と、読取元ディレクトリー・パスの辞書
+            // 出力先CSVファイル名と、読取元ディレクトリー・パスのリストの辞書
             // ================================================
             //
-            var directoryMap = new Dictionary<string, string>()
+            var directoryMap = new Dictionary<string, List<string>>()
             {
-                {"😁RMU 1-00-00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂Enum.csv", @"C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\Enum" },
-                {"😁RMU 1-00-00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂JsonStructure.csv", @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure" },
+                {"😁RMU 1-00-00 Research✏Data Map.csv", new List<string>(){
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\Enum",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure",
+                                                            }
+                },
             };
             // */
 
@@ -56,19 +59,25 @@
                 foreach (var entry in directoryMap)
                 {
                     var filePathToSave = entry.Key;
-                    var folderPathToRead = entry.Value;
+                    var folderPathListToRead = entry.Value;
 
-                    // ディレクトリ直下のすべてのファイル一覧を取得する
-                    string[] allCsharpFiles = Directory.GetFiles(folderPathToRead, "*.cs");
-                    foreach (string csharpFile in allCsharpFiles)
+                    //
+                    // マージ
+                    //
+                    foreach (var folderPathToRead in folderPathListToRead)
                     {
-                        if (!fileMap.ContainsKey(filePathToSave))
+                        // ディレクトリ直下のすべてのファイル一覧を取得する
+                        string[] allCsharpFiles = Directory.GetFiles(folderPathToRead, "*.cs");
+                        foreach (string csharpFile in allCsharpFiles)
                         {
-                            fileMap.Add(filePathToSave, new List<string>() { csharpFile });
-                        }
-                        else
-                        {
-                            fileMap[filePathToSave].Add(csharpFile);
+                            if (!fileMap.ContainsKey(filePathToSave))
+                            {
+                                fileMap.Add(filePathToSave, new List<string>() { csharpFile });
+                            }
+                            else
+                            {
+                                fileMap[filePathToSave].Add(csharpFile);
+                            }
                         }
                     }
                 }
