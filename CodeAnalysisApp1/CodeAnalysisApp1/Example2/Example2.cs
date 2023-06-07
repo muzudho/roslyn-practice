@@ -268,7 +268,26 @@
             //                       /// </summary>
 
             var documentCommentBuilder = new StringBuilder();
+
+            // `leadingTrivia.ToFullString()` は、 `#if UNITY_EDITOR` のようなものも、トリビアとして巻き込んで読取るから難しい。例えば以下は１つのトリビア
+            /*
+            
+#if UNITY_EDITOR
+        /// <summary>
+        /// 😁 ファイルパス　＞　イベント共通の翻訳テキスト
+        /// </summary>
+        private const string JsonFileTranslation = "Assets/RPGMaker/Storage/Event/JSON/eventCommonTranslation.txt";
+#endif
+
+        /// <summary>
+        /// 😁 イベント共通データ・モデル
+        /// </summary>
+             */
             var documentComment = leadingTrivia.ToFullString();
+            // var documentComment2 = leadingTrivia.ToString(); // ToFullString() と同じじゃないか？
+
+
+
             // 改行は必ず `\r\n` （CRLF） とすること
             var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
             foreach (var line in documentCommentLines)
@@ -290,15 +309,23 @@
             //
             // 📖 [How do I read and parse an XML file in C#?](https://stackoverflow.com/questions/642293/how-do-i-read-and-parse-an-xml-file-in-c)
             //
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(documentCommentText);
+            string summaryText;
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(documentCommentText);
 
-            XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
-            string summaryText = summaryNode.InnerText;
-            //                    summaryText:
-            //?? 章Idの前に
+                XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
+                summaryText = summaryNode.InnerText;
+                //                    summaryText:
+                //?? 章Idの前に
 
-            summaryText = summaryText.Replace("\r\n", "\\r\\n");
+                summaryText = summaryText.Replace("\r\n", "\\r\\n");
+            }
+            catch (XmlException ex)
+            {
+                summaryText = $"[[PARSE ERROR]] {ex.Message}";
+            }
 
             return new Record(
                 type: @namespace,

@@ -75,6 +75,15 @@
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure",
                                                                 // Misc
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\Misc",
+
+                                                                //
+                                                                // Service/*/Repository
+                                                                //
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\DatabaseManagement\Repository",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\EventManagement\Repository",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\MapManagement\Repository",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\OutlineManagement\Repository",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\RuntimeDataManagement\Repository",
                                                             }
                 },
             };
