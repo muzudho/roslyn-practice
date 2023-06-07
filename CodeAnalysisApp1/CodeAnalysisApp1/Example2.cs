@@ -283,6 +283,7 @@ namespace CodeAnalysisApp1
             //
             string declarationHeadText;
             string name;
+            string value;
             if (fieldDeclaration.Declaration != null)
             {
                 // Declaration:         int beforeChapterId
@@ -298,7 +299,15 @@ namespace CodeAnalysisApp1
                 if (declarationText.Contains("="))
                 {
                     // "=" より前だけ取るか
-                    declarationText = declarationText.Split('=')[0].TrimEnd();
+                    var tokenList = declarationText.Split('=').ToList();
+
+                    declarationText = tokenList[0].TrimEnd();
+                    tokenList.RemoveAt(0);
+                    value = String.Join("=", tokenList);
+                }
+                else
+                {
+                    value = string.Empty;
                 }
 
                 // とりあえず半角スペースで区切ってみるか
@@ -313,6 +322,7 @@ namespace CodeAnalysisApp1
             {
                 declarationHeadText = string.Empty;
                 name = string.Empty;
+                value = string.Empty;
             }
 
             //
@@ -361,7 +371,7 @@ namespace CodeAnalysisApp1
                 access: modifiers.ToString(),
                 memberType: declarationHeadText,
                 name: name,
-                value: string.Empty,
+                value: value,
                 summary: summaryText);
         }
 
