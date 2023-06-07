@@ -109,47 +109,10 @@ namespace CodeAnalysisApp1
                     {
                         case SyntaxKind.ClassDeclaration:
                             {
-                                var programDeclaration = (ClassDeclarationSyntax)memberDeclaration;
-
-                                // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
-                                foreach (var programDeclarationMember in programDeclaration.Members)
-                                {
-                                    switch (programDeclarationMember.Kind())
-                                    {
-                                        // フィールドの宣言部なら
-                                        case SyntaxKind.FieldDeclaration:
-                                            {
-                                                //
-                                                // プログラム中の宣言メンバーの１つ目
-                                                //
-                                                var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                                                //            fullString:         /// <summary>
-                                                //                                /// ?? 章Idの前に
-                                                //                                /// </summary>
-                                                //public int beforeChapterId;
-
-                                                // CSV
-                                                var record = ParseField(fieldDeclaration);
-                                                builder.AppendLine(record.ToCSV());
-                                            }
-                                            break;
-
-
-                                        // サブ列挙型
-                                        case SyntaxKind.EnumDeclaration:
-                                            {
-                                                ParseEnumDeclaration(
-                                                    builder: builder,
-                                                    // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                                    @namespace: $"{namespaceDeclaration.Name.ToString()}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
-                                                    programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
-                                            }
-                                            break;
-
-                                        default:
-                                            break;
-                                    }
-                                }
+                                ParseClassDeclaration(
+                                    builder: builder,
+                                    @namespace: namespaceDeclaration.Name.ToString(),
+                                    programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
                             }
                             break;
 
@@ -174,7 +137,9 @@ namespace CodeAnalysisApp1
                                                 //public int beforeChapterId;
 
                                                 // CSV
-                                                var record = ParseField(fieldDeclaration);
+                                                var record = ParseField(
+                                                    fieldDeclaration: fieldDeclaration,
+                                                    @namespace: namespaceDeclaration.Name.ToString());
                                                 builder.AppendLine(record.ToCSV());
                                             }
                                             break;
@@ -233,6 +198,55 @@ namespace CodeAnalysisApp1
         }
 
         /// <summary>
+        /// class 型の定義を解析
+        /// </summary>
+        static void ParseClassDeclaration(StringBuilder builder, string @namespace, ClassDeclarationSyntax programDeclaration)
+        {
+            // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
+            foreach (var programDeclarationMember in programDeclaration.Members)
+            {
+                switch (programDeclarationMember.Kind())
+                {
+                    // フィールドの宣言部なら
+                    case SyntaxKind.FieldDeclaration:
+                        {
+                            //
+                            // プログラム中の宣言メンバーの１つ目
+                            //
+                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                            //            fullString:         /// <summary>
+                            //                                /// ?? 章Idの前に
+                            //                                /// </summary>
+                            //public int beforeChapterId;
+
+                            var record = ParseField(
+                                fieldDeclaration: fieldDeclaration,
+                                // ネームスペース.親クラス名　とつなげる
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                            // CSV
+                            builder.AppendLine(record.ToCSV());
+                        }
+                        break;
+
+
+                    // サブ列挙型
+                    case SyntaxKind.EnumDeclaration:
+                        {
+                            ParseEnumDeclaration(
+                                builder: builder,
+                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
+                                programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
         /// 列挙型の定義を解析
         /// </summary>
         static void ParseEnumDeclaration(StringBuilder builder, string @namespace, EnumDeclarationSyntax programDeclaration)
@@ -268,7 +282,7 @@ namespace CodeAnalysisApp1
         /// </summary>
         /// <param name="fieldDeclaration"></param>
         /// <returns></returns>
-        static Record ParseField(FieldDeclarationSyntax fieldDeclaration)
+        static Record ParseField(FieldDeclarationSyntax fieldDeclaration, string @namespace)
         {
             //
             // モディファイア
@@ -367,7 +381,7 @@ namespace CodeAnalysisApp1
             summaryText = summaryText.Replace("\r\n", "\\r\\n");
 
             return new Record(
-                type: string.Empty,
+                type: @namespace,
                 access: modifiers.ToString(),
                 memberType: declarationHeadText,
                 name: name,
