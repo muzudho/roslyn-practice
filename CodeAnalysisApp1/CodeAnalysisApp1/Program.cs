@@ -41,6 +41,7 @@
             {
                 {"😁RMU 1-00-00 Research✏Data Map.csv", new List<string>(){
                                                                 // Data Model
+                                                                // このフォルダーは、サブ・フォルダーを無駄に作ってる
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\DataModel\Animation",
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\DataModel\Armor",
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\DataModel\AssetManage",
@@ -72,6 +73,8 @@
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\Enum",
                                                                 // Json Structure
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure",
+                                                                // Misc
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\Misc",
                                                             }
                 },
             };
