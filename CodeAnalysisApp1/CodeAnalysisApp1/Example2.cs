@@ -35,7 +35,7 @@ namespace CodeAnalysisApp1
 
             var builder = new StringBuilder();
             // ヘッダー
-            builder.AppendLine("Nest,Access,Type,Name,Value,Summary");
+            builder.AppendLine("Type,Access,Type,Name,Value,Summary");
 
             foreach (var rootMember in root.Members)
             {
@@ -76,8 +76,8 @@ namespace CodeAnalysisApp1
                                         {
                                             ParseEnumDeclaration(
                                                 builder: builder,
-                                                // 親クラス名か？
-                                                nest: helloWorldDeclaration.Name.ToString(),
+                                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                                nest: $"{helloWorldDeclaration.Name.ToString()}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclaration.Members[0]).Identifier}",
                                                 programDeclaration: (EnumDeclarationSyntax)programDeclaration.Members[0]);
                                         }
                                         break;
