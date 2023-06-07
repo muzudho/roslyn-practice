@@ -50,7 +50,11 @@
                         case SyntaxKind.ClassDeclaration:
                             {
                                 ParseClassDeclaration(
-                                    builder: builder,
+                                    setRecord: (record) =>
+                                    {
+                                        // CSV
+                                        builder.AppendLine(record.ToCSV());
+                                    },
                                     @namespace: namespaceDeclaration.Name.ToString(),
                                     programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
                             }
@@ -144,7 +148,7 @@
         /// <summary>
         /// class 型の定義を解析
         /// </summary>
-        static void ParseClassDeclaration(StringBuilder builder, string @namespace, ClassDeclarationSyntax programDeclaration)
+        static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string @namespace, ClassDeclarationSyntax programDeclaration)
         {
             // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
             foreach (var programDeclarationMember in programDeclaration.Members)
@@ -167,8 +171,7 @@
                                 fieldDeclaration: fieldDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
                                 @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
-                            // CSV
-                            builder.AppendLine(record.ToCSV());
+                            setRecord(record);
                         }
                         break;
 
@@ -177,11 +180,7 @@
                     case SyntaxKind.EnumDeclaration:
                         {
                             ParseEnumDeclaration(
-                                setRecord: (record) =>
-                                {
-                                    // CSV
-                                    builder.AppendLine(record.ToCSV());
-                                },
+                                setRecord: setRecord,
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
                                 @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
                                 programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
