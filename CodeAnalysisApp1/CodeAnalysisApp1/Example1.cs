@@ -309,7 +309,7 @@ namespace CodeAnalysisApp1
         internal static string ReadTextFile()
         {
             // ファイルパス
-            var filePath = "C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\JsonStructure\\ChapterJson.cs";
+            var filePath = "C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\JsonStructure\\ChapterJson.cs";
 
             // テキスト・ファイル読込
             return File.ReadAllText(filePath);

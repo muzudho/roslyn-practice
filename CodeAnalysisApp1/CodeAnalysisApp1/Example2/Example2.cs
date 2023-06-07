@@ -15,7 +15,7 @@
     {
         internal static void DoIt(
             string filePathToRead,
-            string folderNameToSave)
+            LazyCoding.SetValue<List<RecordEx>> setRecordExList)
         {
             // コンソールに出力すると文字化けするのは、コンソールの方のエンコーディング設定（コードページ）が悪い
             // 📖 [How to get CMD/console encoding in C#](https://stackoverflow.com/questions/5910573/how-to-get-cmd-console-encoding-in-c-sharp)
@@ -115,45 +115,7 @@
                 }
             }
 
-            var builder = new StringBuilder();
-            // ヘッダー
-            builder.AppendLine("FilePathToRead,Type,Access,MemberType,Name,Value,Summary");
-
-            foreach (var recordEx in recordExList)
-            {
-                // CSV
-                builder.AppendLine(recordEx.ToCSV());
-            }
-
-            var csvContent = builder.ToString();
-
-            Console.WriteLine($@"{filePathToRead}
-{csvContent}");
-
-            //
-            // ディレクトリーの準備
-            //
-            var targetDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "CodeAnalysisApp1");
-            if (!Directory.Exists(targetDirectory))
-            {
-                Directory.CreateDirectory(targetDirectory);
-            }
-
-            targetDirectory = Path.Combine(targetDirectory, folderNameToSave);
-            if (!Directory.Exists(targetDirectory))
-            {
-                Directory.CreateDirectory(targetDirectory);
-            }
-
-            //
-            // ファイルへの書き出し
-            //
-            var saveFileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePathToRead);
-            var savePath = Path.Combine(
-                targetDirectory,
-                $"{saveFileNameWithoutExtension}.csv");
-            File.WriteAllText(savePath, csvContent, Encoding.UTF8);
-
+            setRecordExList(recordExList);
         }
 
         /// <summary>
