@@ -8,11 +8,71 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace CodeAnalysisApp1
 {
     internal class Example2
     {
+        /// <summary>
+        /// 出力CSVの１行
+        /// </summary>
+        class Record
+        {
+            internal Record(string type, string access, string memberType, string name, string value, string summary)
+            {
+                Type = type;
+                Access = access;
+                MemberType = memberType;
+                Name = name;
+                Value = value;
+                Summary = summary;
+            }
+
+            internal string Type { get; }
+            internal string Access { get; }
+            internal string MemberType { get; }
+            internal string Name { get; }
+            internal string Value { get; }
+            internal string Summary { get; }
+
+            internal string ToCSV()
+            {
+                var list = new List<string>()
+                {
+                    Type,
+                    Access,
+                    MemberType,
+                    Name,
+                    Value,
+                    Summary,
+                };
+
+                return EscapeCSV(list);
+            }
+
+            static string EscapeCSV(List<string> values)
+            {
+                var escapedValues = new List<string>();
+
+                foreach (var value in values)
+                {
+                    // ダブル・クォーテーションは２つ重ねる
+                    var escapedValue = value.Replace("\"", "\"\"");
+
+                    // カンマが含まれていれば、ダブル・クォーテーションで挟む
+                    if (escapedValue.Contains(","))
+                    {
+                        escapedValue = $"\"{escapedValue}\"";
+                    }
+
+                    escapedValues.Add(escapedValue);
+                }
+
+                return String.Join(",", escapedValues);
+            }
+        }
+
         internal static void DoIt(
             string readFilePath,
             string saveFolderName)
@@ -71,17 +131,13 @@ namespace CodeAnalysisApp1
                                                 // CSV
                                                 var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
 
-                                                var list = new List<string>()
-                                                {
-                                                    string.Empty,       // Type
-                                                    modifiers,          // Access
-                                                    declarationHead,    // MemberType
-                                                    name,               // Name
-                                                    string.Empty,       // Value
-                                                    summary             // Summary
-                                                };
-
-                                                builder.AppendLine(EscapeCSV(list));    // $",{modifiers},{declarationHead},{name},{summary}"
+                                                builder.AppendLine(new Record(
+                                                    type: string.Empty,
+                                                    access: modifiers,
+                                                    memberType: declarationHead,
+                                                    name: name,
+                                                    value: string.Empty,
+                                                    summary: summary).ToCSV());
                                             }
                                             break;
 
@@ -127,17 +183,13 @@ namespace CodeAnalysisApp1
                                                 // CSV
                                                 var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
 
-                                                var list = new List<string>()
-                                                {
-                                                    string.Empty,       // Type
-                                                    modifiers,          // Access
-                                                    declarationHead,    // MemberType
-                                                    name,               // Name
-                                                    string.Empty,       // Value
-                                                    summary             // Summary
-                                                };
-
-                                                builder.AppendLine(EscapeCSV(list));    // $",{modifiers},{declarationHead},{name},,{summary}"
+                                                builder.AppendLine(new Record(
+                                                    type: string.Empty,
+                                                    access: modifiers,
+                                                    memberType: declarationHead,
+                                                    name: name,
+                                                    value: string.Empty,
+                                                    summary: summary).ToCSV());
                                             }
                                             break;
 
@@ -194,27 +246,6 @@ namespace CodeAnalysisApp1
 
         }
 
-        static string EscapeCSV(List<string> values)
-        {
-            var escapedValues = new List<string>();
-
-            foreach(var value in values)
-            {
-                // ダブル・クォーテーションは２つ重ねる
-                var escapedValue = value.Replace("\"", "\"\"");
-
-                // カンマが含まれていれば、ダブル・クォーテーションで挟む
-                if (escapedValue.Contains(","))
-                {
-                    escapedValue = $"\"{escapedValue}\"";
-                }
-
-                escapedValues.Add(escapedValue);
-            }
-
-            return String.Join(",", escapedValues);
-        }
-
         /// <summary>
         /// 列挙型の定義を解析
         /// </summary>
@@ -235,17 +266,13 @@ namespace CodeAnalysisApp1
                             // CSV
                             var (modifiers, identifierText, enumValue, summary) = ParseField(fieldDeclaration);
 
-                            var list = new List<string>()
-                            {
-                                @namespace,         // Type
-                                modifiers,          // Access
-                                string.Empty,       // MemberType
-                                identifierText,     // Name
-                                enumValue,          // Value
-                                summary             // Summary
-                            };
-
-                            builder.AppendLine(EscapeCSV(list)); //  $"{@namespace},{modifiers},,{identifierText},{enumValue},{summary}"
+                            builder.AppendLine(new Record(
+                                type: @namespace,
+                                access: modifiers,
+                                memberType: string.Empty,
+                                name: identifierText,
+                                value: enumValue,
+                                summary: summary).ToCSV());
                         }
                         break;
 
@@ -277,7 +304,7 @@ namespace CodeAnalysisApp1
             //
             string declarationHeadText;
             string name;
-            if (fieldDeclaration.Declaration!=null)
+            if (fieldDeclaration.Declaration != null)
             {
                 // Declaration:         int beforeChapterId
                 //
