@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,7 +36,7 @@ namespace CodeAnalysisApp1
 
             var builder = new StringBuilder();
             // ヘッダー
-            builder.AppendLine("Type,Access,Type,Name,Value,Summary");
+            builder.AppendLine("Type,Access,MemberType,Name,Value,Summary");
 
             foreach (var rootMember in root.Members)
             {
@@ -69,18 +70,29 @@ namespace CodeAnalysisApp1
 
                                                 // CSV
                                                 var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                                builder.AppendLine($",{modifiers},{declarationHead},{name},{summary}");
+
+                                                var list = new List<string>()
+                                                {
+                                                    string.Empty,       // Type
+                                                    modifiers,          // Access
+                                                    declarationHead,    // MemberType
+                                                    name,               // Name
+                                                    string.Empty,       // Value
+                                                    summary             // Summary
+                                                };
+
+                                                builder.AppendLine(EscapeCSV(list));    // $",{modifiers},{declarationHead},{name},{summary}"
                                             }
                                             break;
 
 
-                                        // TODO ★ サブ列挙型
+                                        // サブ列挙型
                                         case SyntaxKind.EnumDeclaration:
                                             {
                                                 ParseEnumDeclaration(
                                                     builder: builder,
                                                     // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                                    nest: $"{namespaceDeclaration.Name.ToString()}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
+                                                    @namespace: $"{namespaceDeclaration.Name.ToString()}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
                                                     programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
                                             }
                                             break;
@@ -114,7 +126,18 @@ namespace CodeAnalysisApp1
 
                                                 // CSV
                                                 var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                                builder.AppendLine($",{modifiers},{declarationHead},{name},,{summary}");
+
+                                                var list = new List<string>()
+                                                {
+                                                    string.Empty,       // Type
+                                                    modifiers,          // Access
+                                                    declarationHead,    // MemberType
+                                                    name,               // Name
+                                                    string.Empty,       // Value
+                                                    summary             // Summary
+                                                };
+
+                                                builder.AppendLine(EscapeCSV(list));    // $",{modifiers},{declarationHead},{name},,{summary}"
                                             }
                                             break;
 
@@ -129,7 +152,7 @@ namespace CodeAnalysisApp1
                             {
                                 ParseEnumDeclaration(
                                     builder: builder,
-                                    nest: string.Empty,
+                                    @namespace: string.Empty,
                                     programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
                             }
                             break;
@@ -171,10 +194,31 @@ namespace CodeAnalysisApp1
 
         }
 
+        static string EscapeCSV(List<string> values)
+        {
+            var escapedValues = new List<string>();
+
+            foreach(var value in values)
+            {
+                // ダブル・クォーテーションは２つ重ねる
+                var escapedValue = value.Replace("\"", "\"\"");
+
+                // カンマが含まれていれば、ダブル・クォーテーションで挟む
+                if (escapedValue.Contains(","))
+                {
+                    escapedValue = $"\"{escapedValue}\"";
+                }
+
+                escapedValues.Add(escapedValue);
+            }
+
+            return String.Join(",", escapedValues);
+        }
+
         /// <summary>
         /// 列挙型の定義を解析
         /// </summary>
-        static void ParseEnumDeclaration(StringBuilder builder, string nest, EnumDeclarationSyntax programDeclaration)
+        static void ParseEnumDeclaration(StringBuilder builder, string @namespace, EnumDeclarationSyntax programDeclaration)
         {
             foreach (var programDeclarationMember in programDeclaration.Members)
             {
@@ -190,7 +234,18 @@ namespace CodeAnalysisApp1
 
                             // CSV
                             var (modifiers, identifierText, enumValue, summary) = ParseField(fieldDeclaration);
-                            builder.AppendLine($"{nest},{modifiers},,{identifierText},{enumValue},{summary}");
+
+                            var list = new List<string>()
+                            {
+                                @namespace,         // Type
+                                modifiers,          // Access
+                                string.Empty,       // MemberType
+                                identifierText,     // Name
+                                enumValue,          // Value
+                                summary             // Summary
+                            };
+
+                            builder.AppendLine(EscapeCSV(list)); //  $"{@namespace},{modifiers},,{identifierText},{enumValue},{summary}"
                         }
                         break;
 
@@ -202,30 +257,62 @@ namespace CodeAnalysisApp1
 
         /// <summary>
         /// class, interface のフィールド用
+        /// 
+        /// - プロパティにもヒットする
         /// </summary>
         /// <param name="fieldDeclaration"></param>
         /// <returns></returns>
         static (string, string, string, string) ParseField(FieldDeclarationSyntax fieldDeclaration)
         {
+            //
+            // モディファイア
+            // ==============
+            //
             var modifiers = fieldDeclaration.Modifiers;
             // Modifiers:           public
 
-            var declaration = fieldDeclaration.Declaration;
-            // Declaration:         int beforeChapterId
+            //
+            // デクラレーション
+            // ================
+            //
+            string declarationHeadText;
+            string name;
+            if (fieldDeclaration.Declaration!=null)
+            {
+                // Declaration:         int beforeChapterId
+                //
+                // List<string> AttackMotionImageLabel = new List<string> { "無し", "ダガー", "剣", "フレイル", "斧", "ウィップ", "杖", "弓", "クロスボウ", "銃", "爪", "グローブ", "槍", "メイス", "ロッド", "こん棒", "チェーン", "未来の剣", "パイプ", "ショットガン", "ライフル", "チェーンソー", "レールガン", "スタンロッド", "ユーザ定義1", "ユーザ定義2", "ユーザ定義3", "ユーザ定義4", "ユーザ定義5", "ユーザ定義6" }
 
-            // 連続する空白を１つにしてみる
-            // 📖 [Replace consecutive whitespace characters with a single space in C#](https://www.techiedelight.com/replace-consecutive-whitespace-by-single-space-csharp/)
-            var declarationText = Regex.Replace(declaration.ToString(), @"\s+", " ");
+                // 連続する空白を１つにしてみる
+                // 📖 [Replace consecutive whitespace characters with a single space in C#](https://www.techiedelight.com/replace-consecutive-whitespace-by-single-space-csharp/)
+                // var declarationText = Regex.Replace(fieldDeclaration.Declaration.ToString(), @"\s+", " ");
+                var declarationText = Regex.Replace(fieldDeclaration.Declaration.ToString(), @"\s+", " ");
 
-            // とりあえず半角スペースで区切ってみるか
-            string[] list = declarationText.ToString().Split(' ');
+                // "=" を含むか？
+                if (declarationText.Contains("="))
+                {
+                    // "=" より前だけ取るか
+                    declarationText = declarationText.Split('=')[0].TrimEnd();
+                }
 
-            var declarationHead = new string[list.Length - 1];
-            Array.Copy(list, 0, declarationHead, 0, list.Length - 1);
-            string declarationHeadText = String.Join(" ", declarationHead);
-            var name = list[list.Length - 1];
+                // とりあえず半角スペースで区切ってみるか
+                string[] list = declarationText.ToString().Split(' ');
 
+                var declarationHead = new string[list.Length - 1];
+                Array.Copy(list, 0, declarationHead, 0, list.Length - 1);
+                declarationHeadText = String.Join(" ", declarationHead);
+                name = list[list.Length - 1];
+            }
+            else
+            {
+                declarationHeadText = string.Empty;
+                name = string.Empty;
+            }
 
+            //
+            // 前トリビア
+            // ==========
+            //
             var leadingTrivia = fieldDeclaration.GetLeadingTrivia();
             //leadingTrivia:         /// <summary>
             //                       /// ?? 章Idの前に
