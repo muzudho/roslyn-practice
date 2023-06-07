@@ -1,78 +1,17 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
-
-namespace CodeAnalysisApp1
+﻿namespace CodeAnalysisApp1.Example2
 {
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Xml;
+
     internal class Example2
     {
-        /// <summary>
-        /// 出力CSVの１行
-        /// </summary>
-        class Record
-        {
-            internal Record(string type, string access, string memberType, string name, string value, string summary)
-            {
-                Type = type;
-                Access = access;
-                MemberType = memberType;
-                Name = name;
-                Value = value;
-                Summary = summary;
-            }
-
-            internal string Type { get; }
-            internal string Access { get; }
-            internal string MemberType { get; }
-            internal string Name { get; }
-            internal string Value { get; }
-            internal string Summary { get; }
-
-            internal string ToCSV()
-            {
-                var list = new List<string>()
-                {
-                    Type,
-                    Access,
-                    MemberType,
-                    Name,
-                    Value,
-                    Summary,
-                };
-
-                return EscapeCSV(list);
-            }
-
-            static string EscapeCSV(List<string> values)
-            {
-                var escapedValues = new List<string>();
-
-                foreach (var value in values)
-                {
-                    // ダブル・クォーテーションは２つ重ねる
-                    var escapedValue = value.Replace("\"", "\"\"");
-
-                    // カンマが含まれていれば、ダブル・クォーテーションで挟む
-                    if (escapedValue.Contains(","))
-                    {
-                        escapedValue = $"\"{escapedValue}\"";
-                    }
-
-                    escapedValues.Add(escapedValue);
-                }
-
-                return String.Join(",", escapedValues);
-            }
-        }
-
         internal static void DoIt(
             string readFilePath,
             string saveFolderName)
@@ -93,6 +32,7 @@ namespace CodeAnalysisApp1
                 text: programText,
                 encoding: Encoding.UTF8);
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
+
 
             var builder = new StringBuilder();
             // ヘッダー
@@ -154,7 +94,11 @@ namespace CodeAnalysisApp1
                         case SyntaxKind.EnumDeclaration:
                             {
                                 ParseEnumDeclaration(
-                                    builder: builder,
+                                    setRecord: (record) =>
+                                    {
+                                        // CSV
+                                        builder.AppendLine(record.ToCSV());
+                                    },
                                     @namespace: string.Empty,
                                     programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
                             }
@@ -174,14 +118,14 @@ namespace CodeAnalysisApp1
             //
             // ディレクトリーの準備
             //
-            var targetDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "CodeAnalysisApp1");
-            if (!System.IO.Directory.Exists(targetDirectory))
+            var targetDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "CodeAnalysisApp1");
+            if (!Directory.Exists(targetDirectory))
             {
                 Directory.CreateDirectory(targetDirectory);
             }
 
-            targetDirectory = System.IO.Path.Combine(targetDirectory, saveFolderName);
-            if (!System.IO.Directory.Exists(targetDirectory))
+            targetDirectory = Path.Combine(targetDirectory, saveFolderName);
+            if (!Directory.Exists(targetDirectory))
             {
                 Directory.CreateDirectory(targetDirectory);
             }
@@ -189,8 +133,8 @@ namespace CodeAnalysisApp1
             //
             // ファイルへの書き出し
             //
-            var saveFileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(readFilePath);
-            var savePath = System.IO.Path.Combine(
+            var saveFileNameWithoutExtension = Path.GetFileNameWithoutExtension(readFilePath);
+            var savePath = Path.Combine(
                 targetDirectory,
                 $"{saveFileNameWithoutExtension}.csv");
             File.WriteAllText(savePath, csvContent, Encoding.UTF8);
@@ -233,7 +177,11 @@ namespace CodeAnalysisApp1
                     case SyntaxKind.EnumDeclaration:
                         {
                             ParseEnumDeclaration(
-                                builder: builder,
+                                setRecord: (record) =>
+                                {
+                                    // CSV
+                                    builder.AppendLine(record.ToCSV());
+                                },
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
                                 @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
                                 programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
@@ -249,7 +197,7 @@ namespace CodeAnalysisApp1
         /// <summary>
         /// 列挙型の定義を解析
         /// </summary>
-        static void ParseEnumDeclaration(StringBuilder builder, string @namespace, EnumDeclarationSyntax programDeclaration)
+        static void ParseEnumDeclaration(LazyCoding.SetValue<Record> setRecord, string @namespace, EnumDeclarationSyntax programDeclaration)
         {
             foreach (var programDeclarationMember in programDeclaration.Members)
             {
@@ -261,11 +209,10 @@ namespace CodeAnalysisApp1
                             //
                             // プログラム中の宣言メンバーの１つ目
                             //
-                            var fieldDeclaration = (EnumMemberDeclarationSyntax)programDeclarationMember;
+                            var fieldDeclaration = programDeclarationMember;
 
-                            // CSV
                             var record = ParseField(fieldDeclaration, @namespace);
-                            builder.AppendLine(record.ToCSV());
+                            setRecord(record);
                         }
                         break;
 
@@ -317,7 +264,7 @@ namespace CodeAnalysisApp1
 
                     declarationText = tokenList[0].TrimEnd();
                     tokenList.RemoveAt(0);
-                    value = String.Join("=", tokenList);
+                    value = string.Join("=", tokenList);
                 }
                 else
                 {
@@ -329,7 +276,7 @@ namespace CodeAnalysisApp1
 
                 var declarationHead = new string[list.Length - 1];
                 Array.Copy(list, 0, declarationHead, 0, list.Length - 1);
-                declarationHeadText = String.Join(" ", declarationHead);
+                declarationHeadText = string.Join(" ", declarationHead);
                 name = list[list.Length - 1];
             }
             else

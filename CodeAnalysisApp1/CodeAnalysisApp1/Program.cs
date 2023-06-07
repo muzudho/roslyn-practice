@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
-namespace CodeAnalysisApp1
+﻿namespace CodeAnalysisApp1
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using TheExample2 = CodeAnalysisApp1.Example2;
+
     internal class Program
     {
         static void Main(string[] args)
@@ -62,7 +62,7 @@ namespace CodeAnalysisApp1
 
             foreach (var entry in targetFileDictionary)
             {
-                Example2.DoIt(
+                TheExample2.Example2.DoIt(
                     readFilePath: entry.Key,
                     saveFolderName: entry.Value);
             }
