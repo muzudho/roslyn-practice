@@ -269,6 +269,7 @@
 
             var documentCommentBuilder = new StringBuilder();
             var documentComment = leadingTrivia.ToFullString();
+            // 改行は必ず `\r\n` （CRLF） とすること
             var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
             foreach (var line in documentCommentLines)
             {
