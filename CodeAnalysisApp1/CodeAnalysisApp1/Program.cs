@@ -19,24 +19,33 @@ namespace CodeAnalysisApp1
             //    "C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\JsonStructure\\ChapterJson.cs",
             //};
 
-            /*
+            //*
+            //
             // 出力先フォルダー名と、ディレクトリー・パスの辞書
+            // ================================================
+            //
             var directoryMap = new Dictionary<string, string>()
             {
                 {"😁RMU 1.00.00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂Enum", @"C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\Enum" },
                 {"😁RMU 1.00.00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂JsonStructure", @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research-Project\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure" },
             };
-            */
+            // */
 
+            //
             // C# ファイルへのパス一覧
+            // =======================
+            //
+            var targetFileDictionary = new Dictionary<string, string>();
+            // ファイル・パスがキー
+            // 保存先フォルダー名が値
+            /*
             var targetFileDictionary = new Dictionary<string, string>()
             {
                 {@"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research-Project\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\Enum\BattleEnums.cs","😁RMU 1.00.00 Research📂Assets📂RPGMaker📂Codebase📂CoreSystem📂Knowledge📂Enum" },
             };
-            // ファイル・パスがキー
-            // 保存先フォルダー名が値
+            */
 
-            /*
+            //*
             {
 
                 foreach (var entry in directoryMap)
@@ -49,7 +58,7 @@ namespace CodeAnalysisApp1
                     }
                 }
             }
-            */
+            // */
 
             foreach (var entry in targetFileDictionary)
             {
