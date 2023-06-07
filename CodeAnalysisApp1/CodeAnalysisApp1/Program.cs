@@ -39,7 +39,12 @@
             //
             var directoryMap = new Dictionary<string, List<string>>()
             {
-                {"😁RMU 1-00-00 Research✏Data Map.csv", new List<string>(){
+                // RMU 1-00-00 Research
+                {"😁Data Map.csv", new List<string>(){
+                                                                //
+                                                                // CoreSystem
+                                                                //
+
                                                                 // Data Model
                                                                 // このフォルダーは、サブ・フォルダーを無駄に作ってる
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\DataModel\Animation",
@@ -84,6 +89,48 @@
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\MapManagement\Repository",
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\OutlineManagement\Repository",
                                                                 @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\CoreSystem\Service\RuntimeDataManagement\Repository",
+
+                                                                //
+                                                                // Runtime
+                                                                //
+                                                                // TODO データとか区別なく、とっちらかってる。結局、全部サーチすりゃいいんじゃないか？
+                                                                //
+
+                                                                // Addon/Knowledge
+                                                                // Addon/Service/Repository
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Addon\Knowledge",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Addon\Service\Repository",
+
+                                                                // Battle
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Battle\Sprites",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Battle\Window",
+
+                                                                // Common
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Component\Hud\Actor",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Component\Hud\Character",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Component\Hud\Display",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Component\Hud\GameProgress",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Component\Hud\Message",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Component\Hud\Party",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common\Enum",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Common",
+
+                                                                // GameState
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\GameState",
+
+                                                                // Map コメント打ち込んでないの　いっぱい残ってる
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\Component\Character",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\Component\Map",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\Component",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\InputName",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\Item",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\Menu",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map\Shop",
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Map",
+
+
+                                                                // Title
+                                                                @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research\Assets\RPGMaker\Codebase\Runtime\Title",
                                                             }
                 },
             };
