@@ -35,7 +35,7 @@ namespace CodeAnalysisApp1
 
             var builder = new StringBuilder();
             // ヘッダー
-            builder.AppendLine("Access,Type,Name,Summary");
+            builder.AppendLine("Access,Type,Name,Value,Summary");
 
             foreach (var rootMember in root.Members)
             {
@@ -99,7 +99,7 @@ namespace CodeAnalysisApp1
 
                                             // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
                                             var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
+                                            builder.AppendLine($"{modifiers},{declarationHead},{name},,{summary}");
                                         }
                                         break;
 
@@ -127,8 +127,8 @@ namespace CodeAnalysisApp1
                                             var fieldDeclaration = (EnumMemberDeclarationSyntax)programDeclarationMember;
 
                                             // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
-                                            var (modifiers, identifierText, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($"{modifiers},,{identifierText},{summary}");
+                                            var (modifiers, identifierText, enumValue, summary) = ParseField(fieldDeclaration);
+                                            builder.AppendLine($"{modifiers},,{identifierText},{enumValue},{summary}");
                                         }
                                         break;
 
@@ -246,7 +246,7 @@ namespace CodeAnalysisApp1
         /// </summary>
         /// <param name="enumMemberDeclaration"></param>
         /// <returns></returns>
-        static (string, string, string) ParseField(EnumMemberDeclarationSyntax enumMemberDeclaration)
+        static (string, string, string, string) ParseField(EnumMemberDeclarationSyntax enumMemberDeclaration)
         {
             var modifiers = enumMemberDeclaration.Modifiers;
             // Modifiers:           public
@@ -258,6 +258,36 @@ namespace CodeAnalysisApp1
             //                       /// ?? 章Idの前に
             //                       /// </summary>
 
+            //
+            // Enum 値
+            //
+            // 📖 [Roslyn CodeAnalysisでenumの値を取得したい](https://teratail.com/questions/290108?sort=1)
+            // 静的には、取れないようだ？
+            //
+            // `= 値` が書かれているかどうかは取得できるようだ？
+            //
+            string enumValue;
+            if (enumMemberDeclaration.EqualsValue!=null)
+            {
+                var equalsValueText = enumMemberDeclaration.EqualsValue.ToString();
+                var match = Regex.Match(equalsValueText, @"=\s*(.*)");
+                if (match.Success)
+                {
+                    enumValue = match.Groups[1].ToString();
+                }
+                else
+                {
+                    enumValue = equalsValueText;
+                }
+            }
+            else
+            {
+                enumValue = string.Empty;
+            }
+
+            //
+            // ドキュメント・コメント
+            //
             var documentCommentBuilder = new StringBuilder();
             var documentComment = leadingTrivia.ToFullString();
             var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
@@ -287,7 +317,7 @@ namespace CodeAnalysisApp1
 
             summaryText = summaryText.Replace("\r\n", "\\r\\n");
 
-            return (modifiers.ToString(), identifierText, summaryText);
+            return (modifiers.ToString(), identifierText, enumValue, summaryText);
         }
     }
 }
