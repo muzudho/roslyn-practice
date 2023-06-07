@@ -39,100 +39,104 @@ namespace CodeAnalysisApp1
 
             foreach (var rootMember in root.Members)
             {
-                var helloWorldDeclaration = (NamespaceDeclarationSyntax)rootMember;
+                var namespaceDeclaration = (NamespaceDeclarationSyntax)rootMember;
 
-                // 先頭メンバー
-                switch (helloWorldDeclaration.Members[0].Kind())
+                // クラスが２個定義されてるとか、列挙型が定義されてるとかに対応
+                foreach (var memberDeclaration in namespaceDeclaration.Members)
                 {
-                    case SyntaxKind.ClassDeclaration:
-                        {
-                            var programDeclaration = (ClassDeclarationSyntax)helloWorldDeclaration.Members[0];
-
-                            foreach (var programDeclarationMember in programDeclaration.Members)
+                    switch (memberDeclaration.Kind())
+                    {
+                        case SyntaxKind.ClassDeclaration:
                             {
-                                switch (programDeclarationMember.Kind())
+                                var programDeclaration = (ClassDeclarationSyntax)memberDeclaration;
+
+                                // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
+                                foreach (var programDeclarationMember in programDeclaration.Members)
                                 {
-                                    // フィールドの宣言部なら
-                                    case SyntaxKind.FieldDeclaration:
-                                        {
-                                            //
-                                            // プログラム中の宣言メンバーの１つ目
-                                            //
-                                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                                            //            fullString:         /// <summary>
-                                            //                                /// ?? 章Idの前に
-                                            //                                /// </summary>
-                                            //public int beforeChapterId;
+                                    switch (programDeclarationMember.Kind())
+                                    {
+                                        // フィールドの宣言部なら
+                                        case SyntaxKind.FieldDeclaration:
+                                            {
+                                                //
+                                                // プログラム中の宣言メンバーの１つ目
+                                                //
+                                                var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                                                //            fullString:         /// <summary>
+                                                //                                /// ?? 章Idの前に
+                                                //                                /// </summary>
+                                                //public int beforeChapterId;
 
-                                            // CSV
-                                            var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($",{modifiers},{declarationHead},{name},{summary}");
-                                        }
-                                        break;
+                                                // CSV
+                                                var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
+                                                builder.AppendLine($",{modifiers},{declarationHead},{name},{summary}");
+                                            }
+                                            break;
 
 
-                                    // TODO ★ サブ列挙型
-                                    case SyntaxKind.EnumDeclaration:
-                                        {
-                                            ParseEnumDeclaration(
-                                                builder: builder,
-                                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                                nest: $"{helloWorldDeclaration.Name.ToString()}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclaration.Members[0]).Identifier}",
-                                                programDeclaration: (EnumDeclarationSyntax)programDeclaration.Members[0]);
-                                        }
-                                        break;
+                                        // TODO ★ サブ列挙型
+                                        case SyntaxKind.EnumDeclaration:
+                                            {
+                                                ParseEnumDeclaration(
+                                                    builder: builder,
+                                                    // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                                    nest: $"{namespaceDeclaration.Name.ToString()}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
+                                                    programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
+                                            }
+                                            break;
 
-                                    default:
-                                        break;
+                                        default:
+                                            break;
+                                    }
                                 }
                             }
-                        }
-                        break;
+                            break;
 
-                    case SyntaxKind.InterfaceDeclaration:
-                        {
-                            var programDeclaration = (InterfaceDeclarationSyntax)helloWorldDeclaration.Members[0];
-
-                            foreach (var programDeclarationMember in programDeclaration.Members)
+                        case SyntaxKind.InterfaceDeclaration:
                             {
-                                switch (programDeclarationMember.Kind())
+                                var programDeclaration = (InterfaceDeclarationSyntax)memberDeclaration;
+
+                                foreach (var programDeclarationMember in programDeclaration.Members)
                                 {
-                                    // フィールドの宣言部なら
-                                    case SyntaxKind.FieldDeclaration:
-                                        {
-                                            //
-                                            // プログラム中の宣言メンバーの１つ目
-                                            //
-                                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                                            //            fullString:         /// <summary>
-                                            //                                /// ?? 章Idの前に
-                                            //                                /// </summary>
-                                            //public int beforeChapterId;
+                                    switch (programDeclarationMember.Kind())
+                                    {
+                                        // フィールドの宣言部なら
+                                        case SyntaxKind.FieldDeclaration:
+                                            {
+                                                //
+                                                // プログラム中の宣言メンバーの１つ目
+                                                //
+                                                var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                                                //            fullString:         /// <summary>
+                                                //                                /// ?? 章Idの前に
+                                                //                                /// </summary>
+                                                //public int beforeChapterId;
 
-                                            // CSV
-                                            var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($",{modifiers},{declarationHead},{name},,{summary}");
-                                        }
-                                        break;
+                                                // CSV
+                                                var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
+                                                builder.AppendLine($",{modifiers},{declarationHead},{name},,{summary}");
+                                            }
+                                            break;
 
-                                    default:
-                                        break;
+                                        default:
+                                            break;
+                                    }
                                 }
                             }
-                        }
-                        break;
+                            break;
 
-                    case SyntaxKind.EnumDeclaration:
-                        {
-                            ParseEnumDeclaration(
-                                builder: builder,
-                                nest: string.Empty,
-                                programDeclaration: (EnumDeclarationSyntax)helloWorldDeclaration.Members[0]);
-                        }
-                        break;
+                        case SyntaxKind.EnumDeclaration:
+                            {
+                                ParseEnumDeclaration(
+                                    builder: builder,
+                                    nest: string.Empty,
+                                    programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
+                            }
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
             }
 
