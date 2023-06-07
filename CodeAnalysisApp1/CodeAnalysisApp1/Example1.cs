@@ -115,6 +115,11 @@ namespace CodeAnalysisApp1
                 case SyntaxKind.FieldDeclaration:
                     {
                         //
+                        // 名前空間は静的には取得できない？
+                        // 📖 [Roslyn : How to get the Namespace of a DeclarationSyntax with Roslyn C#](https://stackoverflow.com/questions/29479200/roslyn-how-to-get-the-namespace-of-a-declarationsyntax-with-roslyn-c-sharp)
+                        //
+
+                        //
                         // プログラム中の宣言メンバーの１つ目
                         //
                         var fieldDeclaration = (FieldDeclarationSyntax)programDeclaration.Members[0];

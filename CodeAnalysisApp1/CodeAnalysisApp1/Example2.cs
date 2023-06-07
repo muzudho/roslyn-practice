@@ -35,7 +35,7 @@ namespace CodeAnalysisApp1
 
             var builder = new StringBuilder();
             // ヘッダー
-            builder.AppendLine("Access,Type,Name,Value,Summary");
+            builder.AppendLine("Nest,Access,Type,Name,Value,Summary");
 
             foreach (var rootMember in root.Members)
             {
@@ -64,9 +64,9 @@ namespace CodeAnalysisApp1
                                             //                                /// </summary>
                                             //public int beforeChapterId;
 
-                                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                                            // CSV
                                             var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($"{modifiers},{declarationHead},{name},{summary}");
+                                            builder.AppendLine($",{modifiers},{declarationHead},{name},{summary}");
                                         }
                                         break;
 
@@ -74,7 +74,11 @@ namespace CodeAnalysisApp1
                                     // TODO ★ サブ列挙型
                                     case SyntaxKind.EnumDeclaration:
                                         {
-
+                                            ParseEnumDeclaration(
+                                                builder: builder,
+                                                // 親クラス名か？
+                                                nest: helloWorldDeclaration.Name.ToString(),
+                                                programDeclaration: (EnumDeclarationSyntax)programDeclaration.Members[0]);
                                         }
                                         break;
 
@@ -105,9 +109,9 @@ namespace CodeAnalysisApp1
                                             //                                /// </summary>
                                             //public int beforeChapterId;
 
-                                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
+                                            // CSV
                                             var (modifiers, declarationHead, name, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($"{modifiers},{declarationHead},{name},,{summary}");
+                                            builder.AppendLine($",{modifiers},{declarationHead},{name},,{summary}");
                                         }
                                         break;
 
@@ -120,30 +124,10 @@ namespace CodeAnalysisApp1
 
                     case SyntaxKind.EnumDeclaration:
                         {
-                            var programDeclaration = (EnumDeclarationSyntax)helloWorldDeclaration.Members[0];
-
-                            foreach (var programDeclarationMember in programDeclaration.Members)
-                            {
-                                switch (programDeclarationMember.Kind())
-                                {
-                                    // フィールドの宣言部なら
-                                    case SyntaxKind.EnumMemberDeclaration:
-                                        {
-                                            //
-                                            // プログラム中の宣言メンバーの１つ目
-                                            //
-                                            var fieldDeclaration = (EnumMemberDeclarationSyntax)programDeclarationMember;
-
-                                            // コメント、アクセス修飾子、戻り値の型、名前はありそうだが
-                                            var (modifiers, identifierText, enumValue, summary) = ParseField(fieldDeclaration);
-                                            builder.AppendLine($"{modifiers},,{identifierText},{enumValue},{summary}");
-                                        }
-                                        break;
-
-                                    default:
-                                        break;
-                                }
-                            }
+                            ParseEnumDeclaration(
+                                builder: builder,
+                                nest: string.Empty,
+                                programDeclaration: (EnumDeclarationSyntax)helloWorldDeclaration.Members[0]);
                         }
                         break;
 
@@ -181,6 +165,35 @@ namespace CodeAnalysisApp1
                 $"{saveFileNameWithoutExtension}.csv");
             File.WriteAllText(savePath, csvContent, Encoding.UTF8);
 
+        }
+
+        /// <summary>
+        /// 列挙型の定義を解析
+        /// </summary>
+        static void ParseEnumDeclaration(StringBuilder builder, string nest, EnumDeclarationSyntax programDeclaration)
+        {
+            foreach (var programDeclarationMember in programDeclaration.Members)
+            {
+                switch (programDeclarationMember.Kind())
+                {
+                    // フィールドの宣言部なら
+                    case SyntaxKind.EnumMemberDeclaration:
+                        {
+                            //
+                            // プログラム中の宣言メンバーの１つ目
+                            //
+                            var fieldDeclaration = (EnumMemberDeclarationSyntax)programDeclarationMember;
+
+                            // CSV
+                            var (modifiers, identifierText, enumValue, summary) = ParseField(fieldDeclaration);
+                            builder.AppendLine($"{nest},{modifiers},,{identifierText},{enumValue},{summary}");
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -275,7 +288,7 @@ namespace CodeAnalysisApp1
             // `= 値` が書かれているかどうかは取得できるようだ？
             //
             string enumValue;
-            if (enumMemberDeclaration.EqualsValue!=null)
+            if (enumMemberDeclaration.EqualsValue != null)
             {
                 var equalsValueText = enumMemberDeclaration.EqualsValue.ToString();
                 var match = Regex.Match(equalsValueText, @"=\s*(.*)");
