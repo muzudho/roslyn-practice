@@ -13,7 +13,8 @@ namespace CodeAnalysisApp1
     internal class Example2
     {
         internal static void DoIt(
-            string readFilePath)
+            string readFilePath,
+            string saveFolderName)
         {
             // コンソールに出力すると文字化けするのは、コンソールの方のエンコーディング設定（コードページ）が悪い
             // 📖 [How to get CMD/console encoding in C#](https://stackoverflow.com/questions/5910573/how-to-get-cmd-console-encoding-in-c-sharp)
@@ -114,12 +115,27 @@ namespace CodeAnalysisApp1
 {csvContent}");
 
             //
+            // ディレクトリーの準備
+            //
+            var targetDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "CodeAnalysisApp1");
+            if (!System.IO.Directory.Exists(targetDirectory))
+            {
+                Directory.CreateDirectory(targetDirectory);
+            }
+
+            targetDirectory = System.IO.Path.Combine(targetDirectory, saveFolderName);
+            if (!System.IO.Directory.Exists(targetDirectory))
+            {
+                Directory.CreateDirectory(targetDirectory);
+            }
+
+            //
             // ファイルへの書き出し
             //
             var saveFileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(readFilePath);
             var savePath = System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                $"CodeAnalysisApp1/{saveFileNameWithoutExtension}.csv");
+                targetDirectory,
+                $"{saveFileNameWithoutExtension}.csv");
             File.WriteAllText(savePath, csvContent, Encoding.UTF8);
 
         }

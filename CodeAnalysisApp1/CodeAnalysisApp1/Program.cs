@@ -12,30 +12,43 @@ namespace CodeAnalysisApp1
 
             // 指定のディレクトリーの中のファイル一覧
             // 📖 [ディレクトリ内にあるファイルの一覧を取得する [C#]](https://johobase.com/get-files-csharp/)
-            
-            // C# ファイルへのパス一覧
-            List<string> csharpFilePathList = new List<string>();
+
             //// ファイルパスのリスト
             //List<string> csharpFilePathList = new List<string>
             //{
             //    "C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\JsonStructure\\ChapterJson.cs",
             //};
 
+            // 出力先フォルダー名と、ディレクトリー・パスの辞書
+            var directoryMap = new Dictionary<string, string>()
             {
-                // ディレクトリパス
-                string dirPath = @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research-Project\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure";
+                {"📂Knowledge📂Enum", @"C:\\Users\\むずでょ\\Documents\\Unity Projects\\RMU-1-00-00-Research-Project\\Assets\\RPGMaker\\Codebase\\CoreSystem\\Knowledge\\Enum" },
+                {"📂Knowledge📂JsonStructure", @"C:\Users\むずでょ\Documents\Unity Projects\RMU-1-00-00-Research-Project\Assets\RPGMaker\Codebase\CoreSystem\Knowledge\JsonStructure" },
+            };
 
-                // ディレクトリ直下のすべてのファイル一覧を取得する
-                string[] allCsharpFiles = Directory.GetFiles(dirPath, "*.cs");
-                foreach (string csharpFile in allCsharpFiles)
+            // C# ファイルへのパス一覧
+            var targetFileDictionary = new Dictionary<string, string>();
+            // ファイル・パスがキー
+            // 保存先フォルダー名が値
+
+            {
+
+                foreach (var entry in directoryMap)
                 {
-                    csharpFilePathList.Add(csharpFile);
+                    // ディレクトリ直下のすべてのファイル一覧を取得する
+                    string[] allCsharpFiles = Directory.GetFiles(entry.Value, "*.cs");
+                    foreach (string csharpFile in allCsharpFiles)
+                    {
+                        targetFileDictionary.Add(csharpFile, entry.Key);
+                    }
                 }
             }
 
-            foreach (var csharpFilePath in csharpFilePathList)
+            foreach (var entry in targetFileDictionary)
             {
-                Example2.DoIt(csharpFilePath);
+                Example2.DoIt(
+                    readFilePath: entry.Key,
+                    saveFolderName: entry.Value);
             }
         }
     }
