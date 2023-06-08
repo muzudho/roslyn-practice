@@ -126,6 +126,7 @@
 
                                             recordExList.Add(new RecordEx(
                                                 recordObj: new Record(
+                                                    kind: "[[What?]]",
                                                     codeLocation: string.Empty,
                                                     access: string.Empty,
                                                     memberType: string.Empty,
@@ -164,6 +165,7 @@
 
                             recordExList.Add(new RecordEx(
                                 recordObj: new Record(
+                                    kind: "[[What?]]",
                                     codeLocation: string.Empty,
                                     access: string.Empty,
                                     memberType: string.Empty,
@@ -283,12 +285,13 @@
                             var message = $"[[What? 247]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
-                                    codeLocation: string.Empty,
-                                    access: string.Empty,
-                                    memberType: string.Empty,
-                                    name: string.Empty,
-                                    value: string.Empty,
-                                    summary: message));
+                                kind: "[[What?]]",
+                                codeLocation: string.Empty,
+                                access: string.Empty,
+                                memberType: string.Empty,
+                                name: string.Empty,
+                                value: string.Empty,
+                                summary: message));
 
                             Console.WriteLine(message);
                         }
@@ -314,7 +317,7 @@
                             //
                             var fieldDeclaration = programDeclarationMember;
 
-                            var record = ParseField(fieldDeclaration, @namespace);
+                            var record = ParseEnum(fieldDeclaration, @namespace);
                             setRecord(record);
                         }
                         break;
@@ -324,12 +327,13 @@
                             var message = $"[[What? 265]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
-                                    codeLocation: string.Empty,
-                                    access: string.Empty,
-                                    memberType: string.Empty,
-                                    name: string.Empty,
-                                    value: string.Empty,
-                                    summary: message));
+                                kind: "[[What?]]",
+                                codeLocation: string.Empty,
+                                access: string.Empty,
+                                memberType: string.Empty,
+                                name: string.Empty,
+                                value: string.Empty,
+                                summary: message));
 
                             Console.WriteLine(message);
                         }
@@ -846,6 +850,7 @@
                 }
 
                 setRecord(new Record(
+                    kind: "Field",
                     codeLocation: @namespace,
                     access: fieldDeclaration.Modifiers.ToString(),
                     memberType: fieldDeclaration.Declaration.Type.ToString(),
@@ -1052,6 +1057,7 @@
             }
 
             return new Record(
+                kind: "Property",
                 codeLocation: @namespace,
                 access: propertyDeclaration.Modifiers.ToString(),
                 memberType: propertyDeclaration.Type.ToString(),
@@ -1227,6 +1233,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
+                kind: "Constructor",
                 codeLocation: @namespace,                                   // コードのある場所
                 access: constructorDeclaration.Modifiers.ToString(),        // 修飾子
                 memberType: string.Empty,                                   // 戻り値の型は無い
@@ -1451,6 +1458,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
+                kind: "Method",
                 codeLocation: @namespace,
                 access: methodDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: methodDeclaration.ReturnType.ToString(),    // 戻り値の型
@@ -1466,7 +1474,7 @@
         /// </summary>
         /// <param name="enumMemberDeclaration"></param>
         /// <returns></returns>
-        static Record ParseField(EnumMemberDeclarationSyntax enumMemberDeclaration, string @namespace)
+        static Record ParseEnum(EnumMemberDeclarationSyntax enumMemberDeclaration, string @namespace)
         {
             var modifiers = enumMemberDeclaration.Modifiers;
             // Modifiers:           public
@@ -1513,6 +1521,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
+                kind:"EnumMember",
                 codeLocation: @namespace,
                 access: modifiers.ToString(),
                 memberType: string.Empty,

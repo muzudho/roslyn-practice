@@ -8,8 +8,19 @@
     /// </summary>
     internal class Record
     {
-        internal Record(string codeLocation, string access, string memberType, string name, string value, string summary)
+        /// <summary>
+        /// 生成
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="codeLocation"></param>
+        /// <param name="access"></param>
+        /// <param name="memberType"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <param name="summary"></param>
+        internal Record(string kind, string codeLocation, string access, string memberType, string name, string value, string summary)
         {
+            Kind = kind;
             CodeLocation = codeLocation;
             Access = access;
             MemberType = memberType;
@@ -17,6 +28,11 @@
             Value = value;
             Summary = summary;
         }
+
+        /// <summary>
+        /// これの種類
+        /// </summary>
+        internal string Kind { get; }
 
         /// <summary>
         /// コードのある場所
@@ -32,8 +48,9 @@
         internal string ToCSV()
         {
             var list = new List<string>()
-                {
+                {                    
                     CodeLocation,
+                    Kind,
                     Access,
                     MemberType,
                     Name,

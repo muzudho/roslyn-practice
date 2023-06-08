@@ -205,8 +205,8 @@
                 // CSV書出し
                 //
                 var builder = new StringBuilder();
-                // ヘッダー CSV
-                builder.AppendLine("FileLocation,CodeLocation,Access,MemberType,Name,Value,Summary");
+                // ヘッダー CSV （この並びは自由が効かない）
+                builder.AppendLine("FileLocation,CodeLocation,Kind,Access,MemberType,Name,Value,Summary");
                 // データ行
                 foreach (var recordEx in recordExList)
                 {
