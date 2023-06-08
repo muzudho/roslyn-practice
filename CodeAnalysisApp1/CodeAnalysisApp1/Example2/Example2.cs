@@ -172,10 +172,6 @@
                                     case SyntaxKind.FieldDeclaration:
                                         {
                                             var fieldDeclaration = (FieldDeclarationSyntax)memberDeclaration;
-                                            //            fullString:         /// <summary>
-                                            //                                /// ?? 章Idの前に
-                                            //                                /// </summary>
-                                            //public int beforeChapterId;
 
                                             ParseField(
                                                 fieldDeclaration: fieldDeclaration,
