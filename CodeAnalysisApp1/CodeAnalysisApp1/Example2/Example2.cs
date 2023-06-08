@@ -38,81 +38,113 @@
 
             foreach (var rootMember in root.Members)
             {
-                var namespaceDeclaration = (NamespaceDeclarationSyntax)rootMember;
-
-                // クラスが２個定義されてるとか、列挙型が定義されてるとかに対応
-                foreach (var memberDeclaration in namespaceDeclaration.Members)
+                switch (rootMember.Kind())
                 {
-                    switch (memberDeclaration.Kind())
-                    {
-                        case SyntaxKind.ClassDeclaration:
-                            {
-                                ParseClassDeclaration(
-                                    setRecord: (record) =>
-                                    {
-                                        recordExList.Add(new RecordEx(
-                                            recordObj: record,
-                                            filePathToRead: filePathToRead));
-                                    },
-                                    @namespace: namespaceDeclaration.Name.ToString(),
-                                    programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
-                            }
-                            break;
+                    case SyntaxKind.NamespaceDeclaration:
+                        {
+                            var namespaceDeclaration = (NamespaceDeclarationSyntax)rootMember;
 
-                        case SyntaxKind.InterfaceDeclaration:
+                            // クラスが２個定義されてるとか、列挙型が定義されてるとかに対応
+                            foreach (var memberDeclaration in namespaceDeclaration.Members)
                             {
-                                var programDeclaration = (InterfaceDeclarationSyntax)memberDeclaration;
-
-                                foreach (var programDeclarationMember in programDeclaration.Members)
+                                switch (memberDeclaration.Kind())
                                 {
-                                    switch (programDeclarationMember.Kind())
-                                    {
-                                        // フィールドの宣言部なら
-                                        case SyntaxKind.FieldDeclaration:
+                                    case SyntaxKind.ClassDeclaration:
+                                        {
+                                            ParseClassDeclaration(
+                                                setRecord: (record) =>
+                                                {
+                                                    recordExList.Add(new RecordEx(
+                                                        recordObj: record,
+                                                        filePathToRead: filePathToRead));
+                                                },
+                                                @namespace: namespaceDeclaration.Name.ToString(),
+                                                programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
+                                        }
+                                        break;
+
+                                    case SyntaxKind.InterfaceDeclaration:
+                                        {
+                                            var programDeclaration = (InterfaceDeclarationSyntax)memberDeclaration;
+
+                                            foreach (var programDeclarationMember in programDeclaration.Members)
                                             {
-                                                //
-                                                // プログラム中の宣言メンバーの１つ目
-                                                //
-                                                var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                                                //            fullString:         /// <summary>
-                                                //                                /// ?? 章Idの前に
-                                                //                                /// </summary>
-                                                //public int beforeChapterId;
+                                                switch (programDeclarationMember.Kind())
+                                                {
+                                                    // フィールドの宣言部なら
+                                                    case SyntaxKind.FieldDeclaration:
+                                                        {
+                                                            //
+                                                            // プログラム中の宣言メンバーの１つ目
+                                                            //
+                                                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+                                                            //            fullString:         /// <summary>
+                                                            //                                /// ?? 章Idの前に
+                                                            //                                /// </summary>
+                                                            //public int beforeChapterId;
 
-                                                var record = ParseField(
-                                                    fieldDeclaration: fieldDeclaration,
-                                                    @namespace: namespaceDeclaration.Name.ToString());
-                                                recordExList.Add(new RecordEx(
-                                                    recordObj: record,
-                                                    filePathToRead: filePathToRead));
+                                                            var record = ParseField(
+                                                                fieldDeclaration: fieldDeclaration,
+                                                                @namespace: namespaceDeclaration.Name.ToString());
+                                                            recordExList.Add(new RecordEx(
+                                                                recordObj: record,
+                                                                filePathToRead: filePathToRead));
+                                                        }
+                                                        break;
+
+                                                    default:
+                                                        break;
+                                                }
                                             }
-                                            break;
+                                        }
+                                        break;
 
-                                        default:
-                                            break;
-                                    }
+                                    case SyntaxKind.EnumDeclaration:
+                                        {
+                                            ParseEnumDeclaration(
+                                                setRecord: (record) =>
+                                                {
+                                                    recordExList.Add(new RecordEx(
+                                                        recordObj: record,
+                                                        filePathToRead: filePathToRead));
+                                                },
+                                                @namespace: string.Empty,
+                                                programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
+                                        }
+                                        break;
+
+                                    default:
+                                        break;
                                 }
                             }
-                            break;
+                        }
+                        break;
 
-                        case SyntaxKind.EnumDeclaration:
-                            {
-                                ParseEnumDeclaration(
-                                    setRecord: (record) =>
-                                    {
-                                        recordExList.Add(new RecordEx(
-                                            recordObj: record,
-                                            filePathToRead: filePathToRead));
-                                    },
-                                    @namespace: string.Empty,
-                                    programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
-                            }
-                            break;
+                    case SyntaxKind.ClassDeclaration:
+                        {
+                            var classDeclaration = (ClassDeclarationSyntax)rootMember;
 
-                        default:
-                            break;
-                    }
+                            ParseClassDeclaration(
+                                setRecord: (record) =>
+                                {
+                                    recordExList.Add(new RecordEx(
+                                        recordObj: record,
+                                        filePathToRead: filePathToRead));
+                                },
+                                // トップ・レベルだから、ネームスペースは無い
+                                @namespace: string.Empty,
+                                programDeclaration: classDeclaration);
+                        }
+                        break;
+
+                    default:
+                        {
+                            Console.WriteLine($"[[What?]] rootMember.Kind(): {rootMember.Kind().ToString()}");
+                        }
+                        break;
+
                 }
+
             }
 
             setRecordExList(recordExList);
@@ -305,27 +337,10 @@
             //</ summary >
 
             //
-            // XMLパーサーが欲しい
+            // ドキュメント・コメント
+            // ======================
             //
-            // 📖 [How do I read and parse an XML file in C#?](https://stackoverflow.com/questions/642293/how-do-i-read-and-parse-an-xml-file-in-c)
-            //
-            string summaryText;
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(documentCommentText);
-
-                XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
-                summaryText = summaryNode.InnerText;
-                //                    summaryText:
-                //?? 章Idの前に
-
-                summaryText = summaryText.Replace("\r\n", "\\r\\n");
-            }
-            catch (XmlException ex)
-            {
-                summaryText = $"[[PARSE ERROR]] {ex.Message}";
-            }
+            string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
                 type: @namespace,
@@ -398,19 +413,10 @@
             var documentCommentText = documentCommentBuilder.ToString();
 
             //
-            // XMLパーサーが欲しい
+            // ドキュメント・コメント
+            // ======================
             //
-            // 📖 [How do I read and parse an XML file in C#?](https://stackoverflow.com/questions/642293/how-do-i-read-and-parse-an-xml-file-in-c)
-            //
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(documentCommentText);
-
-            XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
-            string summaryText = summaryNode.InnerText;
-            //                    summaryText:
-            //?? 章Idの前に
-
-            summaryText = summaryText.Replace("\r\n", "\\r\\n");
+            string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
                 type: @namespace,
@@ -419,6 +425,40 @@
                 name: identifierText,
                 value: enumValue,
                 summary: summaryText);
+        }
+
+        /// <summary>
+        /// ドキュメント・コメントの解析
+        /// </summary>
+        /// <param name="leadingTriviaText">先行トリビア・テキスト</param>
+        /// <returns></returns>
+        static string ParseDocumentComment(string leadingTriviaText)
+        {
+            string summaryText;
+
+            //
+            // XMLパーサーが欲しい
+            //
+            // 📖 [How do I read and parse an XML file in C#?](https://stackoverflow.com/questions/642293/how-do-i-read-and-parse-an-xml-file-in-c)
+            //
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(leadingTriviaText);
+
+                XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
+                summaryText = summaryNode.InnerText;
+                //                    summaryText:
+                //?? 章Idの前に
+
+                summaryText = summaryText.Replace("\r\n", "\\r\\n");
+            }
+            catch (XmlException ex)
+            {
+                summaryText = $"[[PARSE ERROR]] {ex.Message}";
+            }
+
+            return summaryText;
         }
     }
 }
