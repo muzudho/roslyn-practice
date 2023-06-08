@@ -41,6 +41,7 @@
             {
                 switch (rootMember.Kind())
                 {
+                    // ネームスペース宣言
                     case SyntaxKind.NamespaceDeclaration:
                         {
                             var namespaceDeclaration = (NamespaceDeclarationSyntax)rootMember;
@@ -50,8 +51,11 @@
                             {
                                 switch (memberDeclaration.Kind())
                                 {
+                                    // クラス宣言
                                     case SyntaxKind.ClassDeclaration:
                                         {
+                                            var classDeclaration = (ClassDeclarationSyntax)memberDeclaration;
+
                                             ParseClassDeclaration(
                                                 setRecord: (record) =>
                                                 {
@@ -59,30 +63,26 @@
                                                         recordObj: record,
                                                         fileLocation: filePathToRead));
                                                 },
-                                                @namespace: namespaceDeclaration.Name.ToString(),
-                                                programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
+                                                codeLocation: namespaceDeclaration.Name.ToString(),
+                                                classDeclaration: classDeclaration);
                                         }
                                         break;
 
+                                    // インターフェース宣言
                                     case SyntaxKind.InterfaceDeclaration:
                                         {
-                                            var programDeclaration = (InterfaceDeclarationSyntax)memberDeclaration;
+                                            var interfaceDeclaration = (InterfaceDeclarationSyntax)memberDeclaration;
 
-                                            foreach (var programDeclarationMember in programDeclaration.Members)
+                                            // TODO インターフェース宣言部
+
+                                            foreach (var programDeclarationMember in interfaceDeclaration.Members)
                                             {
                                                 switch (programDeclarationMember.Kind())
                                                 {
                                                     // フィールドの宣言部なら
                                                     case SyntaxKind.FieldDeclaration:
                                                         {
-                                                            //
-                                                            // プログラム中の宣言メンバーの１つ目
-                                                            //
                                                             var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                                                            //            fullString:         /// <summary>
-                                                            //                                /// ?? 章Idの前に
-                                                            //                                /// </summary>
-                                                            //public int beforeChapterId;
 
                                                             Record record = null;
                                                             ParseField(
@@ -106,14 +106,14 @@
                                         }
                                         break;
 
-                                    // 構造体
+                                    // 構造体宣言
                                     case SyntaxKind.StructDeclaration:
                                         {
                                             var structDeclaration = (StructDeclarationSyntax)memberDeclaration;
 
                                             var record = ParseStruct(
                                                 structDeclaration: structDeclaration,
-                                                codeLocation: string.Empty);    // TODO コードがある場所
+                                                codeLocation: namespaceDeclaration.Name.ToString());
 
                                             recordExList.Add(new RecordEx(
                                                 recordObj: record,
@@ -121,7 +121,7 @@
                                         }
                                         break;
 
-                                    // 列挙型
+                                    // 列挙型宣言
                                     case SyntaxKind.EnumDeclaration:
                                         {
                                             var enumDeclaration = (EnumDeclarationSyntax)memberDeclaration;
@@ -133,8 +133,62 @@
                                                         recordObj: record,
                                                         fileLocation: filePathToRead));
                                                 },
-                                                codeLocation: string.Empty,    // TODO コードがある場所
-                                                programDeclaration: enumDeclaration);
+                                                codeLocation: namespaceDeclaration.Name.ToString(),
+                                                enumDeclaration: enumDeclaration);
+                                        }
+                                        break;
+
+                                    // コンストラクター宣言
+                                    case SyntaxKind.ConstructorDeclaration:
+                                        {
+                                            var constructorDeclaration = (ConstructorDeclarationSyntax)memberDeclaration;
+
+                                            var record = ParseConstructor(
+                                                constructorDeclaration: constructorDeclaration,
+                                                // ネームスペース.親クラス名　とつなげる
+                                                codeLocation: namespaceDeclaration.Name.ToString());
+
+                                            recordExList.Add(new RecordEx(
+                                                recordObj: record,
+                                                fileLocation: filePathToRead));
+                                        }
+                                        break;
+
+                                    // メソッドの宣言部なら
+                                    case SyntaxKind.MethodDeclaration:
+                                        {
+                                            var methodDeclaration = (MethodDeclarationSyntax)memberDeclaration;
+
+                                            var record = ParseMethod(
+                                                methodDeclaration: methodDeclaration,
+                                                // ネームスペース.親クラス名　とつなげる
+                                                codeLocation: namespaceDeclaration.Name.ToString());
+
+                                            recordExList.Add(new RecordEx(
+                                                recordObj: record,
+                                                fileLocation: filePathToRead));
+                                        }
+                                        break;
+
+                                    // フィールドの宣言部なら
+                                    case SyntaxKind.FieldDeclaration:
+                                        {
+                                            var fieldDeclaration = (FieldDeclarationSyntax)memberDeclaration;
+                                            //            fullString:         /// <summary>
+                                            //                                /// ?? 章Idの前に
+                                            //                                /// </summary>
+                                            //public int beforeChapterId;
+
+                                            ParseField(
+                                                fieldDeclaration: fieldDeclaration,
+                                                // ネームスペース.親クラス名　とつなげる
+                                                codeLocation: namespaceDeclaration.Name.ToString(),
+                                                setRecord: (record) =>
+                                                {
+                                                    recordExList.Add(new RecordEx(
+                                                        recordObj: record,
+                                                        fileLocation: filePathToRead));
+                                                });
                                         }
                                         break;
 
@@ -148,7 +202,7 @@
                                                     codeLocation: string.Empty,
                                                     access: string.Empty,
                                                     memberType: string.Empty,
-                                                    name: string.Empty,
+                                                    name: namespaceDeclaration.Name.ToString(),
                                                     value: string.Empty,
                                                     summary: message),
                                                 fileLocation: filePathToRead));
@@ -160,6 +214,7 @@
                         }
                         break;
 
+                    // クラス宣言
                     case SyntaxKind.ClassDeclaration:
                         {
                             var classDeclaration = (ClassDeclarationSyntax)rootMember;
@@ -172,14 +227,100 @@
                                         fileLocation: filePathToRead));
                                 },
                                 // トップ・レベルだから、ネームスペースは無い
-                                @namespace: string.Empty,
-                                programDeclaration: classDeclaration);
+                                codeLocation: string.Empty,
+                                classDeclaration: classDeclaration);
+                        }
+                        break;
+
+                    // TODO インターフェース宣言部
+
+                    // 構造体宣言
+                    case SyntaxKind.StructDeclaration:
+                        {
+                            var structDeclaration = (StructDeclarationSyntax)rootMember;
+
+                            var record = ParseStruct(
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty,
+                                structDeclaration: structDeclaration);
+
+                            recordExList.Add(new RecordEx(
+                                recordObj: record,
+                                fileLocation: filePathToRead));
+                        }
+                        break;
+
+                    // 列挙型宣言
+                    case SyntaxKind.EnumDeclaration:
+                        {
+                            var enumsDeclaration = (EnumDeclarationSyntax)rootMember;
+
+                            ParseEnumDeclaration(
+                                setRecord: (record) =>
+                                {
+                                    recordExList.Add(new RecordEx(
+                                        recordObj: record,
+                                        fileLocation: filePathToRead));
+                                },
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty,
+                                enumDeclaration: enumsDeclaration);
+                        }
+                        break;
+
+                    // コンストラクター宣言
+                    case SyntaxKind.ConstructorDeclaration:
+                        {
+                            var constructorDeclaration = (ConstructorDeclarationSyntax)rootMember;
+
+                            var record = ParseConstructor(
+                                constructorDeclaration: constructorDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty);
+
+                            recordExList.Add(new RecordEx(
+                                recordObj: record,
+                                fileLocation: filePathToRead));
+                        }
+                        break;
+
+                    // メソッドの宣言部なら
+                    case SyntaxKind.MethodDeclaration:
+                        {
+                            var methodDeclaration = (MethodDeclarationSyntax)rootMember;
+
+                            var record = ParseMethod(
+                                methodDeclaration: methodDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty);
+
+                            recordExList.Add(new RecordEx(
+                                recordObj: record,
+                                fileLocation: filePathToRead));
+                        }
+                        break;
+
+                    // フィールドの宣言部なら
+                    case SyntaxKind.FieldDeclaration:
+                        {
+                            var fieldDeclaration = (FieldDeclarationSyntax)rootMember;
+
+                            ParseField(
+                                fieldDeclaration: fieldDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty,
+                                setRecord: (record) =>
+                                {
+                                    recordExList.Add(new RecordEx(
+                                        recordObj: record,
+                                        fileLocation: filePathToRead));
+                                });
                         }
                         break;
 
                     default:
                         {
-                            var message = $"[[What? 143]] rootMember.Kind(): {rootMember.Kind().ToString()}";
+                            var message = $"[[What? 238]] rootMember.Kind(): {rootMember.Kind().ToString()}";
 
                             recordExList.Add(new RecordEx(
                                 recordObj: new Record(
@@ -205,13 +346,52 @@
         /// <summary>
         /// class 宣言を解析
         /// </summary>
-        static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string @namespace, ClassDeclarationSyntax programDeclaration)
+        static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, ClassDeclarationSyntax classDeclaration)
         {
             // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
-            foreach (var programDeclarationMember in programDeclaration.Members)
+            foreach (var programDeclarationMember in classDeclaration.Members)
             {
                 switch (programDeclarationMember.Kind())
                 {
+                    // サブ・クラス
+                    case SyntaxKind.ClassDeclaration:
+                        {
+                            var subClassDeclaration = (ClassDeclarationSyntax)programDeclarationMember;
+
+                            ParseClassDeclaration(
+                                setRecord: setRecord,
+                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                codeLocation: $"{codeLocation}.{subClassDeclaration.Identifier.ToString()}.{subClassDeclaration.Identifier}",
+                                classDeclaration: subClassDeclaration);
+                        }
+                        break;
+
+                    // サブ構造体
+                    case SyntaxKind.StructDeclaration:
+                        {
+                            var structDeclaration = (StructDeclarationSyntax)programDeclarationMember;
+
+                            var record = ParseStruct(
+                                structDeclaration: structDeclaration,
+                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{structDeclaration.Identifier}");
+                            setRecord(record);
+                        }
+                        break;
+
+                    // サブ列挙型
+                    case SyntaxKind.EnumDeclaration:
+                        {
+                            var enumDeclaration = (EnumDeclarationSyntax)programDeclarationMember;
+
+                            ParseEnumDeclaration(
+                                setRecord: setRecord,
+                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier}",
+                                enumDeclaration: enumDeclaration);
+                        }
+                        break;
+
                     // フィールドの宣言部なら
                     case SyntaxKind.FieldDeclaration:
                         {
@@ -224,7 +404,7 @@
                             ParseField(
                                 fieldDeclaration: fieldDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}",
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}",
                                 setRecord: setRecord);
                         }
                         break;
@@ -241,12 +421,12 @@
                             var record = ParseProperty(
                                 propertyDeclaration: propertyDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}");
                             setRecord(record);
                         }
                         break;
 
-                    // コンストラクターの宣言部なら
+                    // コンストラクター宣言
                     case SyntaxKind.ConstructorDeclaration:
                         {
                             var constructorDeclaration = (ConstructorDeclarationSyntax)programDeclarationMember;
@@ -254,7 +434,7 @@
                             var record = ParseConstructor(
                                 constructorDeclaration: constructorDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}");
                             setRecord(record);
                         }
                         break;
@@ -267,47 +447,8 @@
                             var record = ParseMethod(
                                 methodDeclaration: methodDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}");
                             setRecord(record);
-                        }
-                        break;
-
-                    // サブ・クラス
-                    case SyntaxKind.ClassDeclaration:
-                        {
-                            var classDeclaration = (ClassDeclarationSyntax)programDeclarationMember;
-
-                            ParseClassDeclaration(
-                                setRecord: setRecord,
-                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{classDeclaration.Identifier}",
-                                programDeclaration: classDeclaration);
-                        }
-                        break;
-
-                    // サブ構造体
-                    case SyntaxKind.StructDeclaration:
-                        {
-                            var structDeclaration = (StructDeclarationSyntax)programDeclarationMember;
-
-                            var record = ParseStruct(
-                                structDeclaration: structDeclaration,
-                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{structDeclaration.Identifier}");
-                            setRecord(record);
-                        }
-                        break;
-
-                    // サブ列挙型
-                    case SyntaxKind.EnumDeclaration:
-                        {
-                            var enumDeclaration = (EnumDeclarationSyntax)programDeclarationMember;
-
-                            ParseEnumDeclaration(
-                                setRecord: setRecord,
-                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier}",
-                                programDeclaration: enumDeclaration);
                         }
                         break;
 
@@ -332,11 +473,213 @@
         }
 
         /// <summary>
+        /// 構造体解析
+        /// </summary>
+        /// <param name="structDeclaration">構造体宣言</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <returns>解析結果</returns>
+        static Record ParseStruct(StructDeclarationSyntax structDeclaration, string codeLocation)
+        {
+            // var builder = new StringBuilder();
+
+            //
+            // 引数の個数か？
+            //
+            // builder.Append($" ■Arity:                   {structDeclaration.Arity}");
+            // ■Arity:                   1
+
+            //
+            // 属性
+            //
+            // builder.Append($" ■AttributeLists:          {structDeclaration.AttributeLists}");
+            // ■AttributeLists:          [Serializable]
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■BaseList:                {structDeclaration.BaseList}");
+            // ■BaseList:                
+
+            //
+            // 閉じ波括弧
+            //
+            // builder.Append($" ■CloseBraceToken:         {structDeclaration.CloseBraceToken}");
+            // ■CloseBraceToken:         }
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ConstraintClauses:       {structDeclaration.ConstraintClauses}");
+            // ■ConstraintClauses:       
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsAnnotations:     {structDeclaration.ContainsAnnotations}");
+            // ■ContainsAnnotations:     False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDiagnostics:     {structDeclaration.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:     False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDirectives:      {structDeclaration.ContainsDirectives}");
+            // ■ContainsDirectives:      False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsSkippedText:     {structDeclaration.ContainsSkippedText}");
+            // ■ContainsSkippedText:     False
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■FullSpan:                {structDeclaration.FullSpan}");
+            // ■FullSpan:                [2392..3120)
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasLeadingTrivia:        {structDeclaration.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:        True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasStructuredTrivia:     {structDeclaration.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:     True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasTrailingTrivia:       {structDeclaration.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:       True
+
+            //
+            // 構造体名
+            //
+            // builder.Append($" ■Identifier:              {structDeclaration.Identifier}");
+            // ■Identifier:              DummyNode
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsMissing:               {structDeclaration.IsMissing}");
+            // ■IsMissing:               False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsStructuredTrivia:      {structDeclaration.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:      False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■Keyword:                 {structDeclaration.Keyword}");
+            // ■Keyword:                 struct
+
+            //
+            // プログラミング言語の種類
+            //
+            // builder.Append($" ■Language:                {structDeclaration.Language}");
+            // ■Language:                C#
+
+            //
+            // フィールドの宣言文か？
+            //
+            // builder.Append($" ■Members:                 {structDeclaration.Members}");
+            // ■Members:                 public const string RootName = nameof(array);
+
+            //
+            // 修飾子
+            //
+            // builder.Append($" ■Modifiers:               {structDeclaration.Modifiers}");
+            // ■Modifiers:               private
+
+            //
+            // 開き波括弧
+            //
+            // builder.Append($" ■OpenBraceToken:          {structDeclaration.OpenBraceToken}");
+            // ■OpenBraceToken:          {
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■Parent:                  {structDeclaration.Parent}");
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ParentTrivia:            {structDeclaration.ParentTrivia}");
+            // ■ParentTrivia:            
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■RawKind:                 {structDeclaration.RawKind}");
+            // ■RawKind:                 8856
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■SemicolonToken:          {structDeclaration.SemicolonToken}");
+            // ■SemicolonToken:          
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■Span:                    {structDeclaration.Span}");
+            // ■Span:                    [2526..3118)
+
+            //
+            // 開始文字位置か？
+            //
+            // builder.Append($" ■SpanStart:               {structDeclaration.SpanStart}");
+            // ■SpanStart:               2526
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■SyntaxTree:              {structDeclaration.SyntaxTree}");
+
+            //
+            // 型引数のリスト
+            //
+            // builder.Append($" ■TypeParameterList:       {structDeclaration.TypeParameterList}");
+            // ■TypeParameterList:       <T>
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = structDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            return new Record(
+                kind: "Struct",
+                codeLocation: codeLocation,
+                access: structDeclaration.Modifiers.ToString(),         // 修飾子
+                memberType: string.Empty,                               // 戻り値の型
+                name: structDeclaration.Identifier.ToString(),          // 構造体名
+                value: string.Empty,                                    // 値は空  
+                summary: summaryText);                                  // ドキュメント・コメントの summary
+
+            // テスト用 summary: builder.ToString()
+        }
+
+        /// <summary>
         /// 列挙型の定義を解析
         /// </summary>
-        static void ParseEnumDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, EnumDeclarationSyntax programDeclaration)
+        static void ParseEnumDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, EnumDeclarationSyntax enumDeclaration)
         {
-            foreach (var programDeclarationMember in programDeclaration.Members)
+            foreach (var programDeclarationMember in enumDeclaration.Members)
             {
                 switch (programDeclarationMember.Kind())
                 {
@@ -385,7 +728,7 @@
             string codeLocation,
             LazyCoding.SetValue<Record> setRecord)
         {
-            var builder = new StringBuilder();
+            // var builder = new StringBuilder();
 
             //
             // なんだろう？
@@ -899,7 +1242,7 @@
         /// <returns>解析結果</returns>
         static Record ParseProperty(PropertyDeclarationSyntax propertyDeclaration, string codeLocation)
         {
-            var builder = new StringBuilder();
+            // var builder = new StringBuilder();
 
             //
             // ゲッター、セッターの本文のソースコードが入ってる
@@ -1040,14 +1383,14 @@
             //
             // 開始文字位置、終了文字位置だろうか？
             //
-            builder.Append($" ■Span:                        {propertyDeclaration.Span}");
+            // builder.Append($" ■Span:                        {propertyDeclaration.Span}");
             // ■Span:                        [37308..37721)
             // ■Span:                        [957..1170)
 
             //
             // 開始文字位置だろうか？
             //
-            builder.Append($" ■SpanStart:                   {propertyDeclaration.SpanStart}");
+            // builder.Append($" ■SpanStart:                   {propertyDeclaration.SpanStart}");
             // ■SpanStart:                   37308
             // ■SpanStart:                   957
 
@@ -1059,7 +1402,7 @@
             //
             // 型
             //
-            builder.Append($" ■Type:                        {propertyDeclaration.Type}");
+            // builder.Append($" ■Type:                        {propertyDeclaration.Type}");
             // ■Type:                        CoroutineAccessor
             // ■Type:                        ImageUtility
             // ■Type:                        List<Layer>
@@ -1106,114 +1449,113 @@
         /// <returns></returns>
         static Record ParseConstructor(ConstructorDeclarationSyntax constructorDeclaration, string codeLocation)
         {
-            var builder = new StringBuilder();
-
+            // var builder = new StringBuilder();
 
             //
             // なんだろう？
             //
-            builder.Append($" ■AttributeLists:          {constructorDeclaration.AttributeLists}");
+            // builder.Append($" ■AttributeLists:          {constructorDeclaration.AttributeLists}");
             // ■AttributeLists:          
 
             //
             // 出力ソース長い。関数定義本文なのでは
             //
-            builder.Append($" ■Body:                    {constructorDeclaration.Body}");
+            // builder.Append($" ■Body:                    {constructorDeclaration.Body}");
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsAnnotations:     {constructorDeclaration.ContainsAnnotations}");
+            // builder.Append($" ■ContainsAnnotations:     {constructorDeclaration.ContainsAnnotations}");
             // ■ContainsAnnotations:     False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsDiagnostics:     {constructorDeclaration.ContainsDiagnostics}");
+            // builder.Append($" ■ContainsDiagnostics:     {constructorDeclaration.ContainsDiagnostics}");
             // ■ContainsDiagnostics:     False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsDirectives:      {constructorDeclaration.ContainsDirectives}");
+            // builder.Append($" ■ContainsDirectives:      {constructorDeclaration.ContainsDirectives}");
             // ■ContainsDirectives:      True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsSkippedText:     {constructorDeclaration.ContainsSkippedText}");
+            // builder.Append($" ■ContainsSkippedText:     {constructorDeclaration.ContainsSkippedText}");
             // ■ContainsSkippedText:     False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ExpressionBody:          {constructorDeclaration.ExpressionBody}");
+            // builder.Append($" ■ExpressionBody:          {constructorDeclaration.ExpressionBody}");
             // ■ExpressionBody:          
 
             //
             // 開始文字位置、終了文字位置か？
             //
-            builder.Append($" ■FullSpan:                {constructorDeclaration.FullSpan}");
+            // builder.Append($" ■FullSpan:                {constructorDeclaration.FullSpan}");
             // ■FullSpan:                [13327..14196)
 
             //
             // なんだろう？
             //
-            builder.Append($" ■HasLeadingTrivia:        {constructorDeclaration.HasLeadingTrivia}");
+            // builder.Append($" ■HasLeadingTrivia:        {constructorDeclaration.HasLeadingTrivia}");
             // ■HasLeadingTrivia:        True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■HasStructuredTrivia:     {constructorDeclaration.HasStructuredTrivia}");
+            // builder.Append($" ■HasStructuredTrivia:     {constructorDeclaration.HasStructuredTrivia}");
             // ■HasStructuredTrivia:     True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■HasTrailingTrivia:       {constructorDeclaration.HasTrailingTrivia}");
+            // builder.Append($" ■HasTrailingTrivia:       {constructorDeclaration.HasTrailingTrivia}");
             // ■HasTrailingTrivia:       True
 
             //
             // コンストラクター名か？
             //
-            builder.Append($" ■Identifier:              {constructorDeclaration.Identifier}");
+            // builder.Append($" ■Identifier:              {constructorDeclaration.Identifier}");
             // ■Identifier:              IndentLog
 
             //
             // 初期化子
             //
-            builder.Append($" ■Initializer:             {constructorDeclaration.Initializer}");
+            // builder.Append($" ■Initializer:             {constructorDeclaration.Initializer}");
             // ■Initializer:             
 
             //
             // なんだろう？
             //
-            builder.Append($" ■IsMissing:               {constructorDeclaration.IsMissing}");
+            // builder.Append($" ■IsMissing:               {constructorDeclaration.IsMissing}");
             // ■IsMissing:               False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■IsStructuredTrivia:      {constructorDeclaration.IsStructuredTrivia}");
+            // builder.Append($" ■IsStructuredTrivia:      {constructorDeclaration.IsStructuredTrivia}");
             // ■IsStructuredTrivia:      False
 
             //
             // プログラミング言語の種類
             //
-            builder.Append($" ■Language:                {constructorDeclaration.Language}");
+            // builder.Append($" ■Language:                {constructorDeclaration.Language}");
             // ■Language:                C#
 
             //
             // 修飾子
             //
-            builder.Append($" ■Modifiers:               {constructorDeclaration.Modifiers}");
+            // builder.Append($" ■Modifiers:               {constructorDeclaration.Modifiers}");
             // ■Modifiers:               public
 
             //
             // 引数のリスト
             //
-            builder.Append($" ■ParameterList:           {constructorDeclaration.ParameterList}");
+            // builder.Append($" ■ParameterList:           {constructorDeclaration.ParameterList}");
             // ■ParameterList:           (string stockMessage = null)
 
             //
@@ -1224,31 +1566,31 @@
             //
             // なんだろう？
             //
-            builder.Append($" ■ParentTrivia:            {constructorDeclaration.ParentTrivia}");
+            // builder.Append($" ■ParentTrivia:            {constructorDeclaration.ParentTrivia}");
             // ■ParentTrivia:            
 
             //
             // なんだろう？
             //
-            builder.Append($" ■RawKind:                 {constructorDeclaration.RawKind}");
+            // builder.Append($" ■RawKind:                 {constructorDeclaration.RawKind}");
             // ■RawKind:                 8878
 
             //
             // なんだろう？
             //
-            builder.Append($" ■SemicolonToken:          {constructorDeclaration.SemicolonToken}");
+            // builder.Append($" ■SemicolonToken:          {constructorDeclaration.SemicolonToken}");
             // ■SemicolonToken:          
 
             //
             // 開始文字位置、終了文字位置か？
             //
-            builder.Append($" ■Span:                    {constructorDeclaration.Span}");
+            // builder.Append($" ■Span:                    {constructorDeclaration.Span}");
             // ■Span:                    [13951..14195)
 
             //
             // 開始文字位置か？
             //
-            builder.Append($" ■SpanStart:               {constructorDeclaration.SpanStart}");
+            // builder.Append($" ■SpanStart:               {constructorDeclaration.SpanStart}");
             // ■SpanStart:               13951
 
             //
@@ -1298,6 +1640,7 @@
             // AttributeLists:                
             // AttributeLists:                [Conditional(""____DEBUG__UTIL__NEVER__DEFINED__SYMBOL__NAME____"")]
             // AttributeLists:                [Conditional(""DEBUG_UTIL_TEST_LOG"")]
+            // ■AttributeLists:          [Serializable]
 
             //
             // 本文だろうか？
@@ -1496,178 +1839,6 @@
                 name: methodDeclaration.Identifier.ToString(),          // 関数名
                 value: string.Empty,                                    // 値は空  
                 summary: summaryText);                                  // ドキュメント・コメントの summary
-
-            // テスト用 summary: builder.ToString()
-        }
-
-        /// <summary>
-        /// 構造体解析
-        /// </summary>
-        /// <param name="structDeclaration">構造体宣言</param>
-        /// <param name="codeLocation">コードのある場所</param>
-        /// <returns>解析結果</returns>
-        static Record ParseStruct(StructDeclarationSyntax structDeclaration, string codeLocation)
-        {
-            var builder = new StringBuilder();
-
-            //
-            // 引数の個数か？
-            //
-            builder.Append($" ■Arity:                   {structDeclaration.Arity}");
-
-            //
-            //
-            //
-            builder.Append($" ■AttributeLists:          {structDeclaration.AttributeLists}");
-
-            //
-            //
-            //
-            builder.Append($" ■BaseList:                {structDeclaration.BaseList}");
-
-            //
-            //
-            //
-            builder.Append($" ■CloseBraceToken:         {structDeclaration.CloseBraceToken}");
-
-            //
-            //
-            //
-            builder.Append($" ■ConstraintClauses:       {structDeclaration.ConstraintClauses}");
-
-            //
-            //
-            //
-            builder.Append($" ■ContainsAnnotations:     {structDeclaration.ContainsAnnotations}");
-
-            //
-            //
-            //
-            builder.Append($" ■ContainsDiagnostics:     {structDeclaration.ContainsDiagnostics}");
-
-            //
-            //
-            //
-            builder.Append($" ■ContainsDirectives:      {structDeclaration.ContainsDirectives}");
-
-            //
-            //
-            //
-            builder.Append($" ■ContainsSkippedText:     {structDeclaration.ContainsSkippedText}");
-
-            //
-            //
-            //
-            builder.Append($" ■FullSpan:                {structDeclaration.FullSpan}");
-
-            //
-            //
-            //
-            builder.Append($" ■HasLeadingTrivia:        {structDeclaration.HasLeadingTrivia}");
-
-            //
-            //
-            //
-            builder.Append($" ■HasStructuredTrivia:     {structDeclaration.HasStructuredTrivia}");
-
-            //
-            //
-            //
-            builder.Append($" ■HasTrailingTrivia:       {structDeclaration.HasTrailingTrivia}");
-
-            //
-            //
-            //
-            builder.Append($" ■Identifier:              {structDeclaration.Identifier}");
-
-            //
-            //
-            //
-            builder.Append($" ■IsMissing:               {structDeclaration.IsMissing}");
-
-            //
-            //
-            //
-            builder.Append($" ■IsStructuredTrivia:      {structDeclaration.IsStructuredTrivia}");
-
-            //
-            //
-            //
-            builder.Append($" ■Keyword:                 {structDeclaration.Keyword}");
-
-            //
-            //
-            //
-            builder.Append($" ■Language:                {structDeclaration.Language}");
-
-            //
-            //
-            //
-            builder.Append($" ■Members:                 {structDeclaration.Members}");
-
-            //
-            //
-            //
-            builder.Append($" ■Modifiers:               {structDeclaration.Modifiers}");
-
-            //
-            //
-            //
-            builder.Append($" ■OpenBraceToken:          {structDeclaration.OpenBraceToken}");
-
-            //
-            // 出力長そう
-            //
-            // builder.Append($" ■Parent:                  {structDeclaration.Parent}");
-
-            //
-            //
-            //
-            builder.Append($" ■ParentTrivia:            {structDeclaration.ParentTrivia}");
-
-            //
-            //
-            //
-            builder.Append($" ■RawKind:                 {structDeclaration.RawKind}");
-
-            //
-            //
-            //
-            builder.Append($" ■SemicolonToken:          {structDeclaration.SemicolonToken}");
-
-            //
-            //
-            //
-            builder.Append($" ■Span:                    {structDeclaration.Span}");
-
-            //
-            //
-            //
-            builder.Append($" ■SpanStart:               {structDeclaration.SpanStart}");
-
-            //
-            // 出力長そう
-            //
-            // builder.Append($" ■SyntaxTree:              {structDeclaration.SyntaxTree}");
-
-            builder.Append($" ■TypeParameterList:       {structDeclaration.TypeParameterList}");
-
-            //
-            // ドキュメント・コメント
-            // ======================
-            //
-            var leadingTrivia = structDeclaration.GetLeadingTrivia();
-            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
-            string summaryText = ParseDocumentComment(documentCommentText);
-
-            return new Record(
-                kind: "Method",
-                codeLocation: codeLocation,
-                access: string.Empty,         // 修飾子
-                memberType: string.Empty,    // 戻り値の型
-                name: string.Empty,          // 関数名
-                value: string.Empty,                                    // 値は空  
-                summary: builder.ToString());                                  // ドキュメント・コメントの summary
 
             // テスト用 summary: builder.ToString()
         }
