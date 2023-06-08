@@ -164,7 +164,7 @@
                                     name: string.Empty,
                                     value: string.Empty,
                                     summary: message),
-                                filePathToRead: filePathToRead));  
+                                filePathToRead: filePathToRead));
                             Console.WriteLine(message);
                         }
                         break;
@@ -716,6 +716,9 @@
         /// <returns></returns>
         static string ParseDocumentComment(string leadingTriviaText)
         {
+            // ドキュメント・コメントには複数のルート要素が並ぶことがあるので、`<xml>` で囲んでやる
+            var inputXml = $"<xml>{leadingTriviaText}</xml>";
+
             string summaryText;
 
             //
@@ -726,24 +729,34 @@
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(leadingTriviaText);
+                doc.LoadXml(inputXml);
 
-                XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/summary");
-                summaryText = summaryNode.InnerText;
-                //                    summaryText:
-                //?? 章Idの前に
+                XmlNode summaryNode = doc.DocumentElement.SelectSingleNode("/xml/summary");
 
-                // - 改行は必ず `\r\n` （CRLF） とすること
-                // - Excel に出力したいから、ワンライナーへ変換します
-                summaryText = summaryText.Replace("\r\n", "\\r\\n");
+                if (summaryNode != null)
+                {
+                    summaryText = summaryNode.InnerText;
+                    //                    summaryText:
+                    //?? 章Idの前に
+
+                    // - 改行は必ず `\r\n` （CRLF） とすること
+                    // - Excel に出力したいから、ワンライナーへ変換します
+                    summaryText = summaryText.Replace("\r\n", "\\r\\n");
+                }
+                else
+                {
+                    summaryText = string.Empty;
+                }
             }
             catch (XmlException ex)
             {
                 // - 改行は必ず `\r\n` （CRLF） とすること
                 // - Excel に出力したいから、ワンライナーへ変換します
-                var source = leadingTriviaText.Replace("\r\n", "\\r\\n");
+                var source = inputXml.Replace("\r\n", "\\r\\n");
 
-                summaryText = $"[[PARSE ERROR]] {ex.Message} [[SOURCE]] {source}";
+                // エラーではなく、パーサーの出来が悪い。
+                // `エラーメッセージは気にしないでください。正確ではありません`
+                summaryText = $"[[Don't worry about the error message. Not exactly]] {ex.Message} [[SOURCE]] {source}";
             }
 
             return summaryText;
