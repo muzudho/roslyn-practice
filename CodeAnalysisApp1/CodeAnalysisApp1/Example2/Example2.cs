@@ -328,18 +328,257 @@
         /// <returns></returns>
         static Record ParseField(FieldDeclarationSyntax fieldDeclaration, string @namespace)
         {
+            var builder = new StringBuilder();
+
             //
-            // モディファイア
-            // ==============
+            // なんだろう？
             //
-            var modifiers = fieldDeclaration.Modifiers;
-            // Modifiers:           public
+            // builder.Append($" ■AttributeLists:                {fieldDeclaration.AttributeLists}");
+            // ■AttributeLists:                
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsAnnotations:           {fieldDeclaration.ContainsAnnotations}");
+            // ■ContainsAnnotations:           False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDiagnostics:           {fieldDeclaration.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:           False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDirectives:            {fieldDeclaration.ContainsDirectives}");
+            // ■ContainsDirectives:            False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsSkippedText:           {fieldDeclaration.ContainsSkippedText}");
+            // ■ContainsSkippedText:           False
+
+            //
+            // 宣言文丸ごとか？
+            //
+            // builder.Append($" ■Declaration:                   {fieldDeclaration.Declaration}");
+            // ■Declaration:                   Dictionary<string, AssetEntity> _entities = new Dictionary<string, AssetEntity>()
+            // ■Declaration:                   string Key
+            {
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsAnnotations:                   {fieldDeclaration.Declaration.ContainsAnnotations}");
+                // ■Declaration.ContainsAnnotations:                   False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsDiagnostics:                   {fieldDeclaration.Declaration.ContainsDiagnostics}");
+                // ■Declaration.ContainsDiagnostics:                   False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsDirectives:                    {fieldDeclaration.Declaration.ContainsDirectives}");
+                // ■Declaration.ContainsDirectives:                    False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsSkippedText:                   {fieldDeclaration.Declaration.ContainsSkippedText}");
+                // ■Declaration.ContainsSkippedText:                   False
+
+                //
+                // 開始文字位置、終了文字位置か？
+                //
+                builder.Append($" ■Declaration.FullSpan:                              {fieldDeclaration.Declaration.FullSpan}");
+                // ■Declaration.FullSpan:                              [1063..1144)
+                // ■Declaration.FullSpan:                              [846..9399)
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.HasLeadingTrivia:                      {fieldDeclaration.Declaration.HasLeadingTrivia}");
+                // ■Declaration.HasLeadingTrivia:                      False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.HasStructuredTrivia:                   {fieldDeclaration.Declaration.HasStructuredTrivia}");
+                // ■Declaration.HasStructuredTrivia:                   False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.HasTrailingTrivia:                     {fieldDeclaration.Declaration.HasTrailingTrivia}");
+                // ■Declaration.HasTrailingTrivia:                     False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.IsMissing:                             {fieldDeclaration.Declaration.IsMissing}");
+                // ■Declaration.IsMissing:                             False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.IsStructuredTrivia:                    {fieldDeclaration.Declaration.IsStructuredTrivia}");
+                // ■Declaration.IsStructuredTrivia:                    False
+
+                //
+                // プログラミング言語の種類
+                //
+                builder.Append($" ■Declaration.Language:                              {fieldDeclaration.Declaration.Language}");
+                // ■Declaration.Language:                              C#
+
+                //
+                // ソースが長そう
+                //
+                // builder.Append($" ■Declaration.Parent:                                {fieldDeclaration.Declaration.Parent}");
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ParentTrivia:                          {fieldDeclaration.Declaration.ParentTrivia}");
+                // ■Declaration.ParentTrivia:                          
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.RawKind:                               {fieldDeclaration.Declaration.RawKind}");
+                // ■Declaration.RawKind:                               8794
+
+                //
+                // 開始文字位置、終了文字位置か？
+                //
+                builder.Append($" ■Declaration.Span:                                  {fieldDeclaration.Declaration.Span}");
+                // ■Declaration.Span:                                  [1063..1144)
+                // ■Declaration.Span:                                  [846..9399)
+
+                //
+                // 開始文字位置か
+                //
+                builder.Append($" ■Declaration.SpanStart:                             {fieldDeclaration.Declaration.SpanStart}");
+                // ■Declaration.SpanStart:                             1063
+
+                //
+                // ソースが長そう
+                //
+                // builder.Append($" ■Declaration.SyntaxTree:                            {fieldDeclaration.Declaration.SyntaxTree}");
+
+                //
+                // 型
+                //
+                builder.Append($" ■Declaration.Type:                                  {fieldDeclaration.Declaration.Type}");
+                // ■Declaration.Type:                                  Dictionary<string, AssetEntity>
+                // ■Declaration.Type:                                  List<EventEnum>
+
+                //
+                // 値
+                //
+                builder.Append($" ■Declaration.Variables:                             {fieldDeclaration.Declaration.Variables}");
+                // ■Declaration.Variables:                             _entities = new Dictionary<string, AssetEntity>()
+                // ■Declaration.Variables:                             Map = new List<EventEnum> { 
+                // 空白
+                // 0,
+                // 以下略。長いソース
+            }
+
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■FullSpan:                      {fieldDeclaration.FullSpan}");
+            // ■FullSpan:                      [945..1147)
+            // ■FullSpan:                      [13930..14092)
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasLeadingTrivia:              {fieldDeclaration.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:              True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasStructuredTrivia:           {fieldDeclaration.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:           True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasTrailingTrivia:             {fieldDeclaration.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:             True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsMissing:                     {fieldDeclaration.IsMissing}");
+            // ■IsMissing:                     False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsStructuredTrivia:            {fieldDeclaration.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:            False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■Modifiers:                     {fieldDeclaration.Modifiers}");
+            // ■Modifiers:                     private static readonly
+            // ■Modifiers:                     public
+
+            //
+            // ソースが長そう
+            //
+            // builder.Append($" ■Parent:                        {fieldDeclaration.Parent}");
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ParentTrivia:                  {fieldDeclaration.ParentTrivia}");
+            // ■ParentTrivia:                  
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■RawKind:                       {fieldDeclaration.RawKind}");
+            // ■RawKind:                       8873
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■SemicolonToken:                {fieldDeclaration.SemicolonToken}");
+            // ■SemicolonToken:                ;
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■Span:                          {fieldDeclaration.Span}");
+            // ■Span:                          [1039..1145)
+            // ■Span:                          [14055..14090)
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■SpanStart:                     {fieldDeclaration.SpanStart}");
+            // ■SpanStart:                     1039
+            // ■SpanStart:                     14055
+
+            //
+            // ソースが長そう
+            //
+            // builder.Append($" ■SyntaxTree:                    {fieldDeclaration.SyntaxTree}");
 
             //
             // デクラレーション
             // ================
             //
-            string declarationHeadText;
+            // string declarationHeadText;
             string name;
             string value;
             if (fieldDeclaration.Declaration != null)
@@ -371,14 +610,14 @@
                 // とりあえず半角スペースで区切ってみるか
                 string[] list = declarationText.ToString().Split(' ');
 
-                var declarationHead = new string[list.Length - 1];
-                Array.Copy(list, 0, declarationHead, 0, list.Length - 1);
-                declarationHeadText = string.Join(" ", declarationHead);
+                // var declarationHead = new string[list.Length - 1];
+                // Array.Copy(list, 0, declarationHead, 0, list.Length - 1);
+                // declarationHeadText = string.Join(" ", declarationHead);
                 name = list[list.Length - 1];
             }
             else
             {
-                declarationHeadText = string.Empty;
+                // declarationHeadText = string.Empty;
                 name = string.Empty;
                 value = string.Empty;
             }
@@ -420,11 +659,12 @@
 
             return new Record(
                 codeLocation: @namespace,
-                access: modifiers.ToString(),
-                memberType: declarationHeadText,
+                access: fieldDeclaration.Modifiers.ToString(),
+                memberType: fieldDeclaration.Declaration.Type.ToString(),   // declarationHeadText
                 name: name,
                 value: value,
-                summary: summaryText);
+                summary: builder.ToString()); // テスト用
+                // summary: summaryText);
         }
 
         /// <summary>
