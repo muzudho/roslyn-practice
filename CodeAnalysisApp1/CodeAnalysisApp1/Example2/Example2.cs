@@ -87,7 +87,7 @@
                                                             Record record = null;
                                                             ParseField(
                                                                 fieldDeclaration: fieldDeclaration,
-                                                                @namespace: namespaceDeclaration.Name.ToString(),
+                                                                codeLocation: namespaceDeclaration.Name.ToString(),
                                                                 setRecord: (tempRecord) =>
                                                                 {
                                                                     record = tempRecord;
@@ -106,8 +106,26 @@
                                         }
                                         break;
 
+                                    // 構造体
+                                    case SyntaxKind.StructDeclaration:
+                                        {
+                                            var structDeclaration = (StructDeclarationSyntax)memberDeclaration;
+
+                                            var record = ParseStruct(
+                                                structDeclaration: structDeclaration,
+                                                codeLocation: string.Empty);    // TODO コードがある場所
+
+                                            recordExList.Add(new RecordEx(
+                                                recordObj: record,
+                                                fileLocation: filePathToRead));
+                                        }
+                                        break;
+
+                                    // 列挙型
                                     case SyntaxKind.EnumDeclaration:
                                         {
+                                            var enumDeclaration = (EnumDeclarationSyntax)memberDeclaration;
+
                                             ParseEnumDeclaration(
                                                 setRecord: (record) =>
                                                 {
@@ -115,8 +133,8 @@
                                                         recordObj: record,
                                                         fileLocation: filePathToRead));
                                                 },
-                                                @namespace: string.Empty,
-                                                programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
+                                                codeLocation: string.Empty,    // TODO コードがある場所
+                                                programDeclaration: enumDeclaration);
                                         }
                                         break;
 
@@ -206,7 +224,7 @@
                             ParseField(
                                 fieldDeclaration: fieldDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}",
+                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}",
                                 setRecord: setRecord);
                         }
                         break;
@@ -223,7 +241,7 @@
                             var record = ParseProperty(
                                 propertyDeclaration: propertyDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
                             setRecord(record);
                         }
                         break;
@@ -236,7 +254,7 @@
                             var record = ParseConstructor(
                                 constructorDeclaration: constructorDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
                             setRecord(record);
                         }
                         break;
@@ -249,7 +267,7 @@
                             var record = ParseMethod(
                                 methodDeclaration: methodDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
                             setRecord(record);
                         }
                         break;
@@ -267,6 +285,19 @@
                         }
                         break;
 
+                    // サブ構造体
+                    case SyntaxKind.StructDeclaration:
+                        {
+                            var structDeclaration = (StructDeclarationSyntax)programDeclarationMember;
+
+                            var record = ParseStruct(
+                                structDeclaration: structDeclaration,
+                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{structDeclaration.Identifier}");
+                            setRecord(record);
+                        }
+                        break;
+
                     // サブ列挙型
                     case SyntaxKind.EnumDeclaration:
                         {
@@ -275,14 +306,14 @@
                             ParseEnumDeclaration(
                                 setRecord: setRecord,
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier}",
+                                codeLocation: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier}",
                                 programDeclaration: enumDeclaration);
                         }
                         break;
 
                     default:
                         {
-                            var message = $"[[What? 247]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
+                            var message = $"[[What? 285]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
                                 kind: "[[What?]]",
@@ -303,7 +334,7 @@
         /// <summary>
         /// 列挙型の定義を解析
         /// </summary>
-        static void ParseEnumDeclaration(LazyCoding.SetValue<Record> setRecord, string @namespace, EnumDeclarationSyntax programDeclaration)
+        static void ParseEnumDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, EnumDeclarationSyntax programDeclaration)
         {
             foreach (var programDeclarationMember in programDeclaration.Members)
             {
@@ -317,7 +348,7 @@
                             //
                             var fieldDeclaration = programDeclarationMember;
 
-                            var record = ParseEnum(fieldDeclaration, @namespace);
+                            var record = ParseEnum(fieldDeclaration, codeLocation);
                             setRecord(record);
                         }
                         break;
@@ -351,7 +382,7 @@
         /// <returns></returns>
         static void ParseField(
             FieldDeclarationSyntax fieldDeclaration,
-            string @namespace,
+            string codeLocation,
             LazyCoding.SetValue<Record> setRecord)
         {
             var builder = new StringBuilder();
@@ -851,7 +882,7 @@
 
                 setRecord(new Record(
                     kind: "Field",
-                    codeLocation: @namespace,
+                    codeLocation: codeLocation,
                     access: fieldDeclaration.Modifiers.ToString(),
                     memberType: fieldDeclaration.Declaration.Type.ToString(),
                     name: variable.Identifier.ToString(),
@@ -866,7 +897,7 @@
         /// </summary>
         /// <param name="propertyDeclaration">プロパティ宣言</param>
         /// <returns>解析結果</returns>
-        static Record ParseProperty(PropertyDeclarationSyntax propertyDeclaration, string @namespace)
+        static Record ParseProperty(PropertyDeclarationSyntax propertyDeclaration, string codeLocation)
         {
             var builder = new StringBuilder();
 
@@ -1058,7 +1089,7 @@
 
             return new Record(
                 kind: "Property",
-                codeLocation: @namespace,
+                codeLocation: codeLocation,
                 access: propertyDeclaration.Modifiers.ToString(),
                 memberType: propertyDeclaration.Type.ToString(),
                 name: propertyDeclaration.Identifier.ToString(),
@@ -1073,7 +1104,7 @@
         /// </summary>
         /// <param name="constructorDeclaration">コンストラクター宣言</param>
         /// <returns></returns>
-        static Record ParseConstructor(ConstructorDeclarationSyntax constructorDeclaration, string @namespace)
+        static Record ParseConstructor(ConstructorDeclarationSyntax constructorDeclaration, string codeLocation)
         {
             var builder = new StringBuilder();
 
@@ -1234,7 +1265,7 @@
 
             return new Record(
                 kind: "Constructor",
-                codeLocation: @namespace,                                   // コードのある場所
+                codeLocation: codeLocation,                                   // コードのある場所
                 access: constructorDeclaration.Modifiers.ToString(),        // 修飾子
                 memberType: string.Empty,                                   // 戻り値の型は無い
                 name: constructorDeclaration.Identifier.ToString(),         // 関数名
@@ -1249,7 +1280,7 @@
         /// </summary>
         /// <param name="methodDeclaration"></param>
         /// <returns></returns>
-        static Record ParseMethod(MethodDeclarationSyntax methodDeclaration, string @namespace)
+        static Record ParseMethod(MethodDeclarationSyntax methodDeclaration, string codeLocation)
         {
             var builder = new StringBuilder();
 
@@ -1459,7 +1490,7 @@
 
             return new Record(
                 kind: "Method",
-                codeLocation: @namespace,
+                codeLocation: codeLocation,
                 access: methodDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: methodDeclaration.ReturnType.ToString(),    // 戻り値の型
                 name: methodDeclaration.Identifier.ToString(),          // 関数名
@@ -1470,11 +1501,183 @@
         }
 
         /// <summary>
+        /// 構造体解析
+        /// </summary>
+        /// <param name="structDeclaration">構造体宣言</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <returns>解析結果</returns>
+        static Record ParseStruct(StructDeclarationSyntax structDeclaration, string codeLocation)
+        {
+            var builder = new StringBuilder();
+
+            //
+            // 引数の個数か？
+            //
+            builder.Append($" ■Arity:                   {structDeclaration.Arity}");
+
+            //
+            //
+            //
+            builder.Append($" ■AttributeLists:          {structDeclaration.AttributeLists}");
+
+            //
+            //
+            //
+            builder.Append($" ■BaseList:                {structDeclaration.BaseList}");
+
+            //
+            //
+            //
+            builder.Append($" ■CloseBraceToken:         {structDeclaration.CloseBraceToken}");
+
+            //
+            //
+            //
+            builder.Append($" ■ConstraintClauses:       {structDeclaration.ConstraintClauses}");
+
+            //
+            //
+            //
+            builder.Append($" ■ContainsAnnotations:     {structDeclaration.ContainsAnnotations}");
+
+            //
+            //
+            //
+            builder.Append($" ■ContainsDiagnostics:     {structDeclaration.ContainsDiagnostics}");
+
+            //
+            //
+            //
+            builder.Append($" ■ContainsDirectives:      {structDeclaration.ContainsDirectives}");
+
+            //
+            //
+            //
+            builder.Append($" ■ContainsSkippedText:     {structDeclaration.ContainsSkippedText}");
+
+            //
+            //
+            //
+            builder.Append($" ■FullSpan:                {structDeclaration.FullSpan}");
+
+            //
+            //
+            //
+            builder.Append($" ■HasLeadingTrivia:        {structDeclaration.HasLeadingTrivia}");
+
+            //
+            //
+            //
+            builder.Append($" ■HasStructuredTrivia:     {structDeclaration.HasStructuredTrivia}");
+
+            //
+            //
+            //
+            builder.Append($" ■HasTrailingTrivia:       {structDeclaration.HasTrailingTrivia}");
+
+            //
+            //
+            //
+            builder.Append($" ■Identifier:              {structDeclaration.Identifier}");
+
+            //
+            //
+            //
+            builder.Append($" ■IsMissing:               {structDeclaration.IsMissing}");
+
+            //
+            //
+            //
+            builder.Append($" ■IsStructuredTrivia:      {structDeclaration.IsStructuredTrivia}");
+
+            //
+            //
+            //
+            builder.Append($" ■Keyword:                 {structDeclaration.Keyword}");
+
+            //
+            //
+            //
+            builder.Append($" ■Language:                {structDeclaration.Language}");
+
+            //
+            //
+            //
+            builder.Append($" ■Members:                 {structDeclaration.Members}");
+
+            //
+            //
+            //
+            builder.Append($" ■Modifiers:               {structDeclaration.Modifiers}");
+
+            //
+            //
+            //
+            builder.Append($" ■OpenBraceToken:          {structDeclaration.OpenBraceToken}");
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■Parent:                  {structDeclaration.Parent}");
+
+            //
+            //
+            //
+            builder.Append($" ■ParentTrivia:            {structDeclaration.ParentTrivia}");
+
+            //
+            //
+            //
+            builder.Append($" ■RawKind:                 {structDeclaration.RawKind}");
+
+            //
+            //
+            //
+            builder.Append($" ■SemicolonToken:          {structDeclaration.SemicolonToken}");
+
+            //
+            //
+            //
+            builder.Append($" ■Span:                    {structDeclaration.Span}");
+
+            //
+            //
+            //
+            builder.Append($" ■SpanStart:               {structDeclaration.SpanStart}");
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■SyntaxTree:              {structDeclaration.SyntaxTree}");
+
+            builder.Append($" ■TypeParameterList:       {structDeclaration.TypeParameterList}");
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = structDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            return new Record(
+                kind: "Method",
+                codeLocation: codeLocation,
+                access: string.Empty,         // 修飾子
+                memberType: string.Empty,    // 戻り値の型
+                name: string.Empty,          // 関数名
+                value: string.Empty,                                    // 値は空  
+                summary: builder.ToString());                                  // ドキュメント・コメントの summary
+
+            // テスト用 summary: builder.ToString()
+        }
+
+        /// <summary>
         /// enum 型のメンバー用
         /// </summary>
         /// <param name="enumMemberDeclaration"></param>
         /// <returns></returns>
-        static Record ParseEnum(EnumMemberDeclarationSyntax enumMemberDeclaration, string @namespace)
+        static Record ParseEnum(EnumMemberDeclarationSyntax enumMemberDeclaration, string codeLocation)
         {
             var modifiers = enumMemberDeclaration.Modifiers;
             // Modifiers:           public
@@ -1522,7 +1725,7 @@
 
             return new Record(
                 kind:"EnumMember",
-                codeLocation: @namespace,
+                codeLocation: codeLocation,
                 access: modifiers.ToString(),
                 memberType: string.Empty,
                 name: identifierText,
