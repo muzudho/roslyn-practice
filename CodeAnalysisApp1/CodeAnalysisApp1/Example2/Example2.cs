@@ -733,11 +733,17 @@
                 //                    summaryText:
                 //?? 章Idの前に
 
+                // - 改行は必ず `\r\n` （CRLF） とすること
+                // - Excel に出力したいから、ワンライナーへ変換します
                 summaryText = summaryText.Replace("\r\n", "\\r\\n");
             }
             catch (XmlException ex)
             {
-                summaryText = $"[[PARSE ERROR]] {ex.Message}";
+                // - 改行は必ず `\r\n` （CRLF） とすること
+                // - Excel に出力したいから、ワンライナーへ変換します
+                var source = leadingTriviaText.Replace("\r\n", "\\r\\n");
+
+                summaryText = $"[[PARSE ERROR]] {ex.Message} [[SOURCE]] {source}";
             }
 
             return summaryText;
