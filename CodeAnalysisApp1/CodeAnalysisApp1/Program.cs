@@ -206,7 +206,7 @@
                 //
                 var builder = new StringBuilder();
                 // ヘッダー CSV
-                builder.AppendLine("FilePathToRead,Type,Access,MemberType,Name,Value,Summary");
+                builder.AppendLine("FilePlace,CodePlace,Access,MemberType,Name,Value,Summary");
                 // データ行
                 foreach (var recordEx in recordExList)
                 {

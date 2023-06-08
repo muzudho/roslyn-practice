@@ -10,6 +10,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml;
+    using System.Xml.Linq;
 
     internal class Example2
     {
@@ -139,7 +140,18 @@
 
                     default:
                         {
-                            Console.WriteLine($"[[What?]] rootMember.Kind(): {rootMember.Kind().ToString()}");
+                            var message = $"[[What?]] rootMember.Kind(): {rootMember.Kind().ToString()}";
+
+                            recordExList.Add(new RecordEx(
+                                recordObj: new Record(
+                                    type: string.Empty,
+                                    access: string.Empty,
+                                    memberType: string.Empty,
+                                    name: string.Empty,
+                                    value: string.Empty,
+                                    summary: message),
+                                filePathToRead: filePathToRead));  
+                            Console.WriteLine(message);
                         }
                         break;
 
@@ -193,6 +205,19 @@
                         break;
 
                     default:
+                        {
+                            var message = $"[[What?]] rootMember.Kind(): {programDeclarationMember.Kind().ToString()}";
+
+                            setRecord(new Record(
+                                    type: string.Empty,
+                                    access: string.Empty,
+                                    memberType: string.Empty,
+                                    name: string.Empty,
+                                    value: string.Empty,
+                                    summary: message));
+
+                            Console.WriteLine(message);
+                        }
                         break;
                 }
             }
@@ -221,6 +246,19 @@
                         break;
 
                     default:
+                        {
+                            var message = $"[[What?]] rootMember.Kind(): {programDeclarationMember.Kind().ToString()}";
+
+                            setRecord(new Record(
+                                    type: string.Empty,
+                                    access: string.Empty,
+                                    memberType: string.Empty,
+                                    name: string.Empty,
+                                    value: string.Empty,
+                                    summary: message));
+
+                            Console.WriteLine(message);
+                        }
                         break;
                 }
             }
