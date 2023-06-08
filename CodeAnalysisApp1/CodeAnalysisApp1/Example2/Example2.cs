@@ -226,6 +226,19 @@
                         }
                         break;
 
+                    // コンストラクターの宣言部なら
+                    case SyntaxKind.ConstructorDeclaration:
+                        {
+                            var constructorDeclaration = (ConstructorDeclarationSyntax)programDeclarationMember;
+
+                            var record = ParseConstructor(
+                                constructorDeclaration: constructorDeclaration,
+                                // ネームスペース.親クラス名　とつなげる
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                            setRecord(record);
+                        }
+                        break;
+
                     // メソッドの宣言部なら
                     case SyntaxKind.MethodDeclaration:
                         {
@@ -823,7 +836,7 @@
                 var variable = fieldDeclaration.Declaration.Variables[i];
 
                 string initializerText;
-                if (variable.Initializer!=null)
+                if (variable.Initializer != null)
                 {
                     initializerText = variable.Initializer.ToString();
                 }
@@ -839,7 +852,7 @@
                     name: variable.Identifier.ToString(),
                     value: initializerText,
                     summary: summaryText));
-                    // summary: builder.ToString())); // テスト用
+                // summary: builder.ToString())); // テスト用
             }
         }
 
@@ -1050,6 +1063,181 @@
         }
 
         /// <summary>
+        /// コンストラクター解析
+        /// </summary>
+        /// <param name="constructorDeclaration">コンストラクター宣言</param>
+        /// <returns></returns>
+        static Record ParseConstructor(ConstructorDeclarationSyntax constructorDeclaration, string @namespace)
+        {
+            var builder = new StringBuilder();
+
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■AttributeLists:          {constructorDeclaration.AttributeLists}");
+            // ■AttributeLists:          
+
+            //
+            // 出力ソース長い。関数定義本文なのでは
+            //
+            builder.Append($" ■Body:                    {constructorDeclaration.Body}");
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsAnnotations:     {constructorDeclaration.ContainsAnnotations}");
+            // ■ContainsAnnotations:     False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsDiagnostics:     {constructorDeclaration.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:     False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsDirectives:      {constructorDeclaration.ContainsDirectives}");
+            // ■ContainsDirectives:      True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsSkippedText:     {constructorDeclaration.ContainsSkippedText}");
+            // ■ContainsSkippedText:     False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ExpressionBody:          {constructorDeclaration.ExpressionBody}");
+            // ■ExpressionBody:          
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            builder.Append($" ■FullSpan:                {constructorDeclaration.FullSpan}");
+            // ■FullSpan:                [13327..14196)
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■HasLeadingTrivia:        {constructorDeclaration.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:        True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■HasStructuredTrivia:     {constructorDeclaration.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:     True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■HasTrailingTrivia:       {constructorDeclaration.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:       True
+
+            //
+            // コンストラクター名か？
+            //
+            builder.Append($" ■Identifier:              {constructorDeclaration.Identifier}");
+            // ■Identifier:              IndentLog
+
+            //
+            // 初期化子
+            //
+            builder.Append($" ■Initializer:             {constructorDeclaration.Initializer}");
+            // ■Initializer:             
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■IsMissing:               {constructorDeclaration.IsMissing}");
+            // ■IsMissing:               False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■IsStructuredTrivia:      {constructorDeclaration.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:      False
+
+            //
+            // プログラミング言語の種類
+            //
+            builder.Append($" ■Language:                {constructorDeclaration.Language}");
+            // ■Language:                C#
+
+            //
+            // 修飾子
+            //
+            builder.Append($" ■Modifiers:               {constructorDeclaration.Modifiers}");
+            // ■Modifiers:               public
+
+            //
+            // 引数のリスト
+            //
+            builder.Append($" ■ParameterList:           {constructorDeclaration.ParameterList}");
+            // ■ParameterList:           (string stockMessage = null)
+
+            //
+            // 出力ソース長そう
+            //
+            // builder.Append($" ■Parent:                  {constructorDeclaration.Parent}");
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ParentTrivia:            {constructorDeclaration.ParentTrivia}");
+            // ■ParentTrivia:            
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■RawKind:                 {constructorDeclaration.RawKind}");
+            // ■RawKind:                 8878
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■SemicolonToken:          {constructorDeclaration.SemicolonToken}");
+            // ■SemicolonToken:          
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            builder.Append($" ■Span:                    {constructorDeclaration.Span}");
+            // ■Span:                    [13951..14195)
+
+            //
+            // 開始文字位置か？
+            //
+            builder.Append($" ■SpanStart:               {constructorDeclaration.SpanStart}");
+            // ■SpanStart:               13951
+
+            //
+            // 出力ソース長そう
+            //
+            // builder.Append($" ■SyntaxTree:              {constructorDeclaration.SyntaxTree}");
+
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = constructorDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            return new Record(
+                codeLocation: @namespace,                                   // コードのある場所
+                access: constructorDeclaration.Modifiers.ToString(),        // 修飾子
+                memberType: string.Empty,                                   // 戻り値の型は無い
+                name: constructorDeclaration.Identifier.ToString(),         // 関数名
+                value: string.Empty,                                        // 値は空  
+                summary: summaryText);                                      // ドキュメント・コメントの summary
+
+            // テスト用 summary: builder.ToString()
+        }
+
+        /// <summary>
         /// メソッド解析
         /// </summary>
         /// <param name="methodDeclaration"></param>
@@ -1061,14 +1249,14 @@
             //
             // 引数の個数か？
             //
-            // builder.AppendLine($"Arity:                         {methodDeclaration.Arity}");
+            // builder.Append($"Arity:                         {methodDeclaration.Arity}");
             // Arity:                         1
             // Arity:                         0
 
             //
             // アノテーションか？
             //
-            // builder.AppendLine($"AttributeLists:                {methodDeclaration.AttributeLists}");
+            // builder.Append($"AttributeLists:                {methodDeclaration.AttributeLists}");
             // AttributeLists:                
             // AttributeLists:                [Conditional(""____DEBUG__UTIL__NEVER__DEFINED__SYMBOL__NAME____"")]
             // AttributeLists:                [Conditional(""DEBUG_UTIL_TEST_LOG"")]
@@ -1076,12 +1264,12 @@
             //
             // 本文だろうか？
             //
-            // builder.AppendLine($"Body:                          {methodDeclaration.Body}");
+            // builder.Append($"Body:                          {methodDeclaration.Body}");
 
             //
             // ジェネリック型への制約か？
             //
-            // builder.AppendLine($"ConstraintClauses:             {methodDeclaration.ConstraintClauses}");
+            // builder.Append($"ConstraintClauses:             {methodDeclaration.ConstraintClauses}");
             // ConstraintClauses:             
             // ConstraintClauses:             where T : IComparable<T>
             // ConstraintClauses:             where TEnum : struct
@@ -1090,69 +1278,69 @@
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ContainsAnnotations:           {methodDeclaration.ContainsAnnotations}");
+            // builder.Append($"ContainsAnnotations:           {methodDeclaration.ContainsAnnotations}");
             // ContainsAnnotations:           False
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ContainsDiagnostics:           {methodDeclaration.ContainsDiagnostics}");
+            // builder.Append($"ContainsDiagnostics:           {methodDeclaration.ContainsDiagnostics}");
             // ContainsDiagnostics:           False
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ContainsDirectives:            {methodDeclaration.ContainsDirectives}");
+            // builder.Append($"ContainsDirectives:            {methodDeclaration.ContainsDirectives}");
             // ContainsDirectives:            True
             // ContainsDirectives:            False
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ContainsSkippedText:           {methodDeclaration.ContainsSkippedText}");
+            // builder.Append($"ContainsSkippedText:           {methodDeclaration.ContainsSkippedText}");
             // ContainsSkippedText:           False
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ExplicitInterfaceSpecifier:    {methodDeclaration.ExplicitInterfaceSpecifier}");
+            // builder.Append($"ExplicitInterfaceSpecifier:    {methodDeclaration.ExplicitInterfaceSpecifier}");
             // ExplicitInterfaceSpecifier:    
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ExpressionBody:                {methodDeclaration.ExpressionBody}");
+            // builder.Append($"ExpressionBody:                {methodDeclaration.ExpressionBody}");
             // ExpressionBody:                
 
             //
             // コードの記述の開始文字、終了文字位置か？
             //
-            // builder.AppendLine($"FullSpan:                      {methodDeclaration.FullSpan}");
+            // builder.Append($"FullSpan:                      {methodDeclaration.FullSpan}");
             // FullSpan:                      [36254..36638)
             // FullSpan:                      [487..951)
 
             //
             // 多分、前方に付いている文字の固まりがあるかどうかだと思う
             //
-            // builder.AppendLine($"HasLeadingTrivia:              {methodDeclaration.HasLeadingTrivia}");
+            // builder.Append($"HasLeadingTrivia:              {methodDeclaration.HasLeadingTrivia}");
             // HasLeadingTrivia:              True
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"HasStructuredTrivia:           {methodDeclaration.HasStructuredTrivia}");
+            // builder.Append($"HasStructuredTrivia:           {methodDeclaration.HasStructuredTrivia}");
             // HasStructuredTrivia:           True
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"HasTrailingTrivia:             {methodDeclaration.HasTrailingTrivia}");
+            // builder.Append($"HasTrailingTrivia:             {methodDeclaration.HasTrailingTrivia}");
             // HasTrailingTrivia:             True
 
             //
             // 関数名
             //
-            // builder.AppendLine($"Identifier:                    {methodDeclaration.Identifier}");
+            // builder.Append($"Identifier:                    {methodDeclaration.Identifier}");
             // Identifier:                    Start
             // Identifier:                    Stop
             // Identifier:                    OnDisable
@@ -1161,32 +1349,32 @@
             //
             // なんだろう？
             //
-            // builder.AppendLine($"IsMissing:                     {methodDeclaration.IsMissing}");
+            // builder.Append($"IsMissing:                     {methodDeclaration.IsMissing}");
             // IsMissing:                     False
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"IsStructuredTrivia:            {methodDeclaration.IsStructuredTrivia}");
+            // builder.Append($"IsStructuredTrivia:            {methodDeclaration.IsStructuredTrivia}");
             // IsStructuredTrivia:            False
 
             //
             // プログラミング言語の種類
             //
-            // builder.AppendLine($"Language:                      {methodDeclaration.Language}");
+            // builder.Append($"Language:                      {methodDeclaration.Language}");
             // Language:                      C#
 
             //
             // 修飾子
             //
-            // builder.AppendLine($"Modifiers:                     {methodDeclaration.Modifiers}");
+            // builder.Append($"Modifiers:                     {methodDeclaration.Modifiers}");
             // Modifiers:                     public static
             // Modifiers:                     private
 
             //
             // 引数のリストの記述
             //
-            // builder.AppendLine($"ParameterList:                 {methodDeclaration.ParameterList}");
+            // builder.Append($"ParameterList:                 {methodDeclaration.ParameterList}");
             // ParameterList:                 (IEnumerator routine)
             // ParameterList:                 (ref Coroutine coroutine)
             // ParameterList:                 (int lhs, int rhs, int min = int.MinValue, int max = int.MaxValue)
@@ -1199,24 +1387,24 @@
             //
             // これを含むソースコード本文か？
             //
-            // builder.AppendLine($"Parent:                        {methodDeclaration.Parent}");
+            // builder.Append($"Parent:                        {methodDeclaration.Parent}");
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"ParentTrivia:                  {methodDeclaration.ParentTrivia}");
+            // builder.Append($"ParentTrivia:                  {methodDeclaration.ParentTrivia}");
             // ParentTrivia:                  
 
             //
             // なんだろう？
             //
-            // builder.AppendLine($"RawKind:                       {methodDeclaration.RawKind}");
+            // builder.Append($"RawKind:                       {methodDeclaration.RawKind}");
             // RawKind:                       8875
 
             //
             // 戻り値の型の記述
             //
-            // builder.AppendLine($"ReturnType:                    {methodDeclaration.ReturnType}");
+            // builder.Append($"ReturnType:                    {methodDeclaration.ReturnType}");
             // ReturnType:                    Coroutine
             // ReturnType:                    void
             // ReturnType:                    IEnumerable<(T item, int index)>
@@ -1224,32 +1412,32 @@
             //
             // なんだろう？
             //
-            // builder.AppendLine($"SemicolonToken:                {methodDeclaration.SemicolonToken}");
+            // builder.Append($"SemicolonToken:                {methodDeclaration.SemicolonToken}");
             // SemicolonToken:                
 
             //
             // 文字開始位置、終了位置か？
             //
-            // builder.AppendLine($"Span:                          {methodDeclaration.Span}");
+            // builder.Append($"Span:                          {methodDeclaration.Span}");
             // Span:                          [36415..36636)
             // Span:                          [476..667)
 
             //
             // 文字開始位置か？
             //
-            // builder.AppendLine($"SpanStart:                     {methodDeclaration.SpanStart}");
+            // builder.Append($"SpanStart:                     {methodDeclaration.SpanStart}");
             // SpanStart:                     36415
             // SpanStart:                     493
 
             //
             // 長いソースコード？
             //
-            // builder.AppendLine($"SyntaxTree:                    {methodDeclaration.SyntaxTree}");
+            // builder.Append($"SyntaxTree:                    {methodDeclaration.SyntaxTree}");
 
             //
             // 型パラメーターのリスト？
             //
-            // builder.AppendLine($"TypeParameterList:             {methodDeclaration.TypeParameterList}");
+            // builder.Append($"TypeParameterList:             {methodDeclaration.TypeParameterList}");
             // TypeParameterList:             
             // TypeParameterList:             <T>
             // TypeParameterList:             <TEnum>
