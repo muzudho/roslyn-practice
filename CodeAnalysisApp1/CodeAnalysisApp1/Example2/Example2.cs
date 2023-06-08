@@ -376,31 +376,14 @@
         /// 😁 イベント共通データ・モデル
         /// </summary>
              */
-            var documentComment = leadingTrivia.ToFullString();
-            // var documentComment2 = leadingTrivia.ToString(); // ToFullString() と同じじゃないか？
 
-
-
-            // 改行は必ず `\r\n` （CRLF） とすること
-            var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-            foreach (var line in documentCommentLines)
-            {
-                var match = Regex.Match(line, @"\s*/// ?(.*)");
-                if (match.Success)
-                {
-                    var content = match.Groups[1];
-                    documentCommentBuilder.AppendLine(content.ToString());
-                }
-            }
-            var documentCommentText = documentCommentBuilder.ToString();
-            //documentCommentText: < summary >
-            //?? 章Idの前に
-            //</ summary >
 
             //
             // ドキュメント・コメント
             // ======================
             //
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
@@ -617,13 +600,23 @@
             // TypeParameterList:             <T>
             // TypeParameterList:             <TEnum>
 
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = methodDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
             return new Record(
                 type: @namespace,
-                access: string.Empty,
-                memberType: string.Empty,
-                name: "[[Method]]",
-                value: string.Empty,
-                summary: builder.ToString());
+                access: methodDeclaration.Modifiers.ToString(),         // 修飾子
+                memberType: methodDeclaration.ReturnType.ToString(),    // 戻り値の型
+                name: methodDeclaration.Identifier.ToString(),          // 関数名
+                value: string.Empty,                                    // 値は空  
+                summary: summaryText);                                  // ドキュメント・コメントの summary
+
+            // テスト用 summary: builder.ToString()
         }
 
         /// <summary>
@@ -672,25 +665,9 @@
 
             //
             // ドキュメント・コメント
-            //
-            var documentCommentBuilder = new StringBuilder();
-            var documentComment = leadingTrivia.ToFullString();
-            var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-            foreach (var line in documentCommentLines)
-            {
-                var match = Regex.Match(line, @"\s*/// ?(.*)");
-                if (match.Success)
-                {
-                    var content = match.Groups[1];
-                    documentCommentBuilder.AppendLine(content.ToString());
-                }
-            }
-            var documentCommentText = documentCommentBuilder.ToString();
-
-            //
-            // ドキュメント・コメント
             // ======================
             //
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
@@ -700,6 +677,36 @@
                 name: identifierText,
                 value: enumValue,
                 summary: summaryText);
+        }
+
+        /// <summary>
+        /// ドキュメント・コメント文字列から、XML形式文字列を取得
+        /// </summary>
+        /// <param name="leadingTrivia">先行トリビア</param>
+        /// <returns>XML形式文字列</returns>
+        static string ChangeLeadingTriviaToDocumentCommentXMLText(SyntaxTriviaList leadingTrivia)
+        {
+            var documentCommentBuilder = new StringBuilder();
+            var documentComment = leadingTrivia.ToFullString();
+            // var documentComment2 = leadingTrivia.ToString(); // ToFullString() と同じじゃないか？
+
+            // 改行は必ず `\r\n` （CRLF） とすること
+            var documentCommentLines = documentComment.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+
+            foreach (var line in documentCommentLines)
+            {
+                var match = Regex.Match(line, @"\s*/// ?(.*)");
+                if (match.Success)
+                {
+                    var content = match.Groups[1];
+                    documentCommentBuilder.AppendLine(content.ToString());
+                }
+            }
+
+            return documentCommentBuilder.ToString();
+            // documentCommentText: < summary >
+            // 😁 章Idの前に
+            // </ summary >
         }
 
         /// <summary>
