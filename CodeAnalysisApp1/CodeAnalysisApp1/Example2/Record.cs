@@ -47,14 +47,14 @@
             return string.Join(",", list);
         }
 
-        internal static List<string> EscapeCSV(List<string> values)
+        internal static List<string> EscapeCSV(List<string> row)
         {
             var escapedValues = new List<string>();
 
-            foreach (var value in values)
+            foreach (var cell in row)
             {
                 // ダブル・クォーテーションは２つ重ねる
-                var escapedValue = value.Replace("\"", "\"\"");
+                var escapedValue = cell.Replace("\"", "\"\"");
 
                 // カンマが含まれていれば、ダブル・クォーテーションで挟む
                 if (escapedValue.Contains(","))
@@ -95,12 +95,22 @@
                 //- 空白を無視して = で始まるなら
                 if (RegexStartEquals.IsMatch(value))
                 {
-                    escapedValue = $"=T(\"{value}\")";
+                    escapedValue = value;
+
+                    // これからダブルクォーテーションで挟むので、既存のダブルクォーテーションを二重にする
+                    escapedValue = escapedValue.Replace("\"", "\"\"");
+
+                    escapedValue = $"\"=T(\"\"{escapedValue}\"\")\"";
                 }
                 // 
                 // - 空白を無視して "= で始まるなら
                 else if (RegexStartDquotEquals.IsMatch(value))
                 {
+                    escapedValue = value;
+
+                    // これからダブルクォーテーションで挟むので、既存のダブルクォーテーションを二重にする
+                    // escapedValue = value.Replace("\"", "\"\"");
+
                     //if (value.Contains(","))
                     //{
                     //    // さらにカンマが含まれているケース
@@ -112,7 +122,8 @@
                     //}
 
 
-                    escapedValue = $"\"=T(\"{value}\")\"";
+                    escapedValue = $"\"=T(\"{escapedValue}\")\"";
+
                     //// 両端のダブルクォーテーションを外す
                     //var match = RegexRemoveDquot.Match(value);
                     //if (match.Success)
