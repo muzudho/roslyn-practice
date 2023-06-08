@@ -5,17 +5,20 @@
 
     internal class RecordEx
     {
-        internal RecordEx(Record recordObj, string filePathToRead)
+        internal RecordEx(Record recordObj, string fileLocation)
         {
             RecordObj = recordObj;
-            FilePathToRead = filePathToRead;
+            FileLocation = fileLocation;
         }
 
         // - プロパティ
 
         Record RecordObj { get; }
 
-        string FilePathToRead { get; }
+        /// <summary>
+        /// ファイルのある場所
+        /// </summary>
+        string FileLocation { get; }
 
         // - メソッド
 
@@ -25,7 +28,7 @@
 
             var list = new List<string>()
             {
-                FilePathToRead,
+                FileLocation,
             };
 
             builder.Append($"{Record.EscapeCSV(list)},{this.RecordObj.ToCSV()}");

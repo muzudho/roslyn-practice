@@ -7,9 +7,9 @@
     /// </summary>
     internal class Record
     {
-        internal Record(string type, string access, string memberType, string name, string value, string summary)
+        internal Record(string codeLocation, string access, string memberType, string name, string value, string summary)
         {
-            Type = type;
+            CodeLocation = codeLocation;
             Access = access;
             MemberType = memberType;
             Name = name;
@@ -17,7 +17,11 @@
             Summary = summary;
         }
 
-        internal string Type { get; }
+        /// <summary>
+        /// コードのある場所
+        /// </summary>
+        internal string CodeLocation { get; }
+
         internal string Access { get; }
         internal string MemberType { get; }
         internal string Name { get; }
@@ -28,7 +32,7 @@
         {
             var list = new List<string>()
                 {
-                    Type,
+                    CodeLocation,
                     Access,
                     MemberType,
                     Name,

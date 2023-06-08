@@ -57,7 +57,7 @@
                                                 {
                                                     recordExList.Add(new RecordEx(
                                                         recordObj: record,
-                                                        filePathToRead: filePathToRead));
+                                                        fileLocation: filePathToRead));
                                                 },
                                                 @namespace: namespaceDeclaration.Name.ToString(),
                                                 programDeclaration: (ClassDeclarationSyntax)memberDeclaration);
@@ -89,7 +89,7 @@
                                                                 @namespace: namespaceDeclaration.Name.ToString());
                                                             recordExList.Add(new RecordEx(
                                                                 recordObj: record,
-                                                                filePathToRead: filePathToRead));
+                                                                fileLocation: filePathToRead));
                                                         }
                                                         break;
 
@@ -107,7 +107,7 @@
                                                 {
                                                     recordExList.Add(new RecordEx(
                                                         recordObj: record,
-                                                        filePathToRead: filePathToRead));
+                                                        fileLocation: filePathToRead));
                                                 },
                                                 @namespace: string.Empty,
                                                 programDeclaration: (EnumDeclarationSyntax)memberDeclaration);
@@ -120,13 +120,13 @@
 
                                             recordExList.Add(new RecordEx(
                                                 recordObj: new Record(
-                                                    type: string.Empty,
+                                                    codeLocation: string.Empty,
                                                     access: string.Empty,
                                                     memberType: string.Empty,
                                                     name: string.Empty,
                                                     value: string.Empty,
                                                     summary: message),
-                                                filePathToRead: filePathToRead));
+                                                fileLocation: filePathToRead));
                                             Console.WriteLine(message);
                                         }
                                         break;
@@ -144,7 +144,7 @@
                                 {
                                     recordExList.Add(new RecordEx(
                                         recordObj: record,
-                                        filePathToRead: filePathToRead));
+                                        fileLocation: filePathToRead));
                                 },
                                 // トップ・レベルだから、ネームスペースは無い
                                 @namespace: string.Empty,
@@ -158,13 +158,13 @@
 
                             recordExList.Add(new RecordEx(
                                 recordObj: new Record(
-                                    type: string.Empty,
+                                    codeLocation: string.Empty,
                                     access: string.Empty,
                                     memberType: string.Empty,
                                     name: string.Empty,
                                     value: string.Empty,
                                     summary: message),
-                                filePathToRead: filePathToRead));
+                                fileLocation: filePathToRead));
                             Console.WriteLine(message);
                         }
                         break;
@@ -197,6 +197,23 @@
 
                             var record = ParseField(
                                 fieldDeclaration: fieldDeclaration,
+                                // ネームスペース.親クラス名　とつなげる
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                            setRecord(record);
+                        }
+                        break;
+
+                    // プロパティの宣言部なら
+                    case SyntaxKind.PropertyDeclaration:
+                        {
+                            var propertyDeclaration = (PropertyDeclarationSyntax)programDeclarationMember;
+                            //            fullString:         /// <summary>
+                            //                                /// ?? 章Idの前に
+                            //                                /// </summary>
+                            //public int beforeChapterId;
+
+                            var record = ParseProperty(
+                                propertyDeclaration: propertyDeclaration,
                                 // ネームスペース.親クラス名　とつなげる
                                 @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
                             setRecord(record);
@@ -244,10 +261,10 @@
 
                     default:
                         {
-                            var message = $"[[What? 224]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
+                            var message = $"[[What? 247]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
-                                    type: string.Empty,
+                                    codeLocation: string.Empty,
                                     access: string.Empty,
                                     memberType: string.Empty,
                                     name: string.Empty,
@@ -288,7 +305,7 @@
                             var message = $"[[What? 265]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
-                                    type: string.Empty,
+                                    codeLocation: string.Empty,
                                     access: string.Empty,
                                     memberType: string.Empty,
                                     name: string.Empty,
@@ -402,12 +419,218 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
-                type: @namespace,
+                codeLocation: @namespace,
                 access: modifiers.ToString(),
                 memberType: declarationHeadText,
                 name: name,
                 value: value,
                 summary: summaryText);
+        }
+
+        /// <summary>
+        /// プロパティ解析
+        /// </summary>
+        /// <param name="propertyDeclaration">プロパティ宣言</param>
+        /// <returns>解析結果</returns>
+        static Record ParseProperty(PropertyDeclarationSyntax propertyDeclaration, string @namespace)
+        {
+            var builder = new StringBuilder();
+
+            //
+            // ゲッター、セッターの本文のソースコードが入ってる
+            //
+            // builder.Append($" ■AccessorList:                {propertyDeclaration.AccessorList}");
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■AttributeLists:              {propertyDeclaration.AttributeLists}");
+            // ■AttributeLists:              
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsAnnotations:         {propertyDeclaration.ContainsAnnotations}");
+            // ■ContainsAnnotations:         False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDiagnostics:         {propertyDeclaration.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:         False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDirectives:          {propertyDeclaration.ContainsDirectives}");
+            // ■ContainsDirectives:          True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsSkippedText:         {propertyDeclaration.ContainsSkippedText}");
+            // ■ContainsSkippedText:         False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ExplicitInterfaceSpecifier:  {propertyDeclaration.ExplicitInterfaceSpecifier}");
+            // ■ExplicitInterfaceSpecifier:   
+
+            //
+            // 式を使ったプロパティのときの本文。長いソースになることもある
+            //
+            // builder.Append($" ■ExpressionBody:              {propertyDeclaration.ExpressionBody}");
+            // ■ExpressionBody:              
+            // ■ExpressionBody:              => MapPrefabManagerForRuntime.layers
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■FullSpan:                    {propertyDeclaration.FullSpan}");
+            // ■FullSpan:                    [37167..37723)
+            // ■FullSpan:                    [881..1172)
+
+            //
+            // 先行トリビアが付いているか？
+            //
+            // builder.Append($" ■HasLeadingTrivia:            {propertyDeclaration.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:            True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasStructuredTrivia:         {propertyDeclaration.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:         True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasTrailingTrivia:           {propertyDeclaration.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:           True
+
+            //
+            // プロパティ名
+            //
+            // builder.Append($" ■Identifier:                  {propertyDeclaration.Identifier}");
+            // ■Identifier:                  Instance
+            // ■Identifier:                  LayersForRuntime
+
+            //
+            // 初期化子
+            //
+            // builder.Append($" ■Initializer:                 {propertyDeclaration.Initializer}");
+            // ■Initializer:                 = false
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsMissing:                   {propertyDeclaration.IsMissing}");
+            // ■IsMissing:                   False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsStructuredTrivia:          {propertyDeclaration.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:          False
+            // ■Initializer:                 = 0
+            // ■Initializer:                 = new List<string>()
+
+            //
+            // プログラミング言語
+            //
+            // builder.Append($" ■Language:                    {propertyDeclaration.Language}");
+            // ■Language:                    C#
+
+            //
+            // 修飾子
+            //
+            // builder.Append($" ■Modifiers:                   {propertyDeclaration.Modifiers}");
+            // ■Modifiers:                   private static
+            // ■Modifiers:                   public override
+
+            //
+            // 長いソース
+            //
+            // builder.Append($" ■Parent:                      {propertyDeclaration.Parent}");
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ParentTrivia:                {propertyDeclaration.ParentTrivia}");
+            // ■ParentTrivia:                
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■RawKind:                     {propertyDeclaration.RawKind}");
+            // ■RawKind:                     8892
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■SemicolonToken:              {propertyDeclaration.SemicolonToken}");
+            // ■SemicolonToken:              
+
+            //
+            // 開始文字位置、終了文字位置だろうか？
+            //
+            builder.Append($" ■Span:                        {propertyDeclaration.Span}");
+            // ■Span:                        [37308..37721)
+            // ■Span:                        [957..1170)
+
+            //
+            // 開始文字位置だろうか？
+            //
+            builder.Append($" ■SpanStart:                   {propertyDeclaration.SpanStart}");
+            // ■SpanStart:                   37308
+            // ■SpanStart:                   957
+
+            //
+            // 長いソース
+            //
+            // builder.Append($" ■SyntaxTree:                  {propertyDeclaration.SyntaxTree}");
+
+            //
+            // 型
+            //
+            builder.Append($" ■Type:                        {propertyDeclaration.Type}");
+            // ■Type:                        CoroutineAccessor
+            // ■Type:                        ImageUtility
+            // ■Type:                        List<Layer>
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = propertyDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            //
+            // 値
+            // ====
+            //
+            string value;
+            if (propertyDeclaration.Identifier != null)
+            {
+                // TODO 長くなったり、複数行になるかも。ワンライナーにしたい
+                value = propertyDeclaration.Identifier.ToString();
+            }
+            else
+            {
+                value = string.Empty;
+            }
+
+            return new Record(
+                codeLocation: @namespace,
+                access: propertyDeclaration.Modifiers.ToString(),
+                memberType: propertyDeclaration.Type.ToString(),
+                name: propertyDeclaration.Identifier.ToString(),
+                value: value,
+                summary: summaryText);
+
+            // テスト用 summary: builder.ToString()
         }
 
         /// <summary>
@@ -624,7 +847,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
-                type: @namespace,
+                codeLocation: @namespace,
                 access: methodDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: methodDeclaration.ReturnType.ToString(),    // 戻り値の型
                 name: methodDeclaration.Identifier.ToString(),          // 関数名
@@ -686,7 +909,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
-                type: @namespace,
+                codeLocation: @namespace,
                 access: modifiers.ToString(),
                 memberType: string.Empty,
                 name: identifierText,
