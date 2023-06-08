@@ -26,12 +26,14 @@
         {
             var builder = new StringBuilder();
 
-            var list = new List<string>()
+            var row = new List<string>()
             {
                 FileLocation,
             };
 
-            builder.Append($"{Record.EscapeCSV(list)},{this.RecordObj.ToCSV()}");
+            row = Record.EscapeCSV(row);
+
+            builder.Append($"{string.Join(",", row)},{this.RecordObj.ToCSV()}");
 
             return builder.ToString();
         }

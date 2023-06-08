@@ -6,11 +6,9 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml;
-    using System.Xml.Linq;
 
     internal class Example2
     {
@@ -199,7 +197,7 @@
                                             recordExList.Add(new RecordEx(
                                                 recordObj: new Record(
                                                     kind: "[[What?]]",
-                                                    codeLocation: string.Empty,
+                                                    codeLocation: namespaceDeclaration.Name.ToString(),
                                                     access: string.Empty,
                                                     memberType: string.Empty,
                                                     name: namespaceDeclaration.Name.ToString(),
@@ -361,7 +359,7 @@
                             ParseClassDeclaration(
                                 setRecord: setRecord,
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{codeLocation}.{subClassDeclaration.Identifier.ToString()}.{subClassDeclaration.Identifier}",
+                                codeLocation: $"{codeLocation}.{subClassDeclaration.Identifier.ToString()}.{subClassDeclaration.Identifier.ToString()}",
                                 classDeclaration: subClassDeclaration);
                         }
                         break;
@@ -374,7 +372,7 @@
                             var record = ParseStruct(
                                 structDeclaration: structDeclaration,
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{structDeclaration.Identifier}");
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{structDeclaration.Identifier.ToString()}");
                             setRecord(record);
                         }
                         break;
@@ -387,7 +385,7 @@
                             ParseEnumDeclaration(
                                 setRecord: setRecord,
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier}",
+                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier.ToString()}",
                                 enumDeclaration: enumDeclaration);
                         }
                         break;
@@ -396,10 +394,6 @@
                     case SyntaxKind.FieldDeclaration:
                         {
                             var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-                            //            fullString:         /// <summary>
-                            //                                /// ?? 章Idの前に
-                            //                                /// </summary>
-                            //public int beforeChapterId;
 
                             ParseField(
                                 fieldDeclaration: fieldDeclaration,
@@ -413,10 +407,6 @@
                     case SyntaxKind.PropertyDeclaration:
                         {
                             var propertyDeclaration = (PropertyDeclarationSyntax)programDeclarationMember;
-                            //            fullString:         /// <summary>
-                            //                                /// ?? 章Idの前に
-                            //                                /// </summary>
-                            //public int beforeChapterId;
 
                             var record = ParseProperty(
                                 propertyDeclaration: propertyDeclaration,
