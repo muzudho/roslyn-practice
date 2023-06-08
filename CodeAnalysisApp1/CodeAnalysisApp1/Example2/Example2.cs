@@ -216,14 +216,29 @@
                         }
                         break;
 
+                    // サブ・クラス
+                    case SyntaxKind.ClassDeclaration:
+                        {
+                            var classDeclaration = (ClassDeclarationSyntax)programDeclarationMember;
+
+                            ParseClassDeclaration(
+                                setRecord: setRecord,
+                                // ネームスペース.親クラス名.自列挙型名　とつなげる
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{classDeclaration.Identifier}",
+                                programDeclaration: classDeclaration);
+                        }
+                        break;
+
                     // サブ列挙型
                     case SyntaxKind.EnumDeclaration:
                         {
+                            var enumDeclaration = (EnumDeclarationSyntax)programDeclarationMember;
+
                             ParseEnumDeclaration(
                                 setRecord: setRecord,
                                 // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{((EnumDeclarationSyntax)programDeclarationMember).Identifier}",
-                                programDeclaration: (EnumDeclarationSyntax)programDeclarationMember);
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier}",
+                                programDeclaration: enumDeclaration);
                         }
                         break;
 
