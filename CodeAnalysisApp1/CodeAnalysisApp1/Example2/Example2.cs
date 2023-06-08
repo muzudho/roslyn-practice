@@ -115,6 +115,20 @@
                                         break;
 
                                     default:
+                                        {
+                                            var message = $"[[What? 119]] memberDeclaration.Kind(): {memberDeclaration.Kind().ToString()}";
+
+                                            recordExList.Add(new RecordEx(
+                                                recordObj: new Record(
+                                                    type: string.Empty,
+                                                    access: string.Empty,
+                                                    memberType: string.Empty,
+                                                    name: string.Empty,
+                                                    value: string.Empty,
+                                                    summary: message),
+                                                filePathToRead: filePathToRead));
+                                            Console.WriteLine(message);
+                                        }
                                         break;
                                 }
                             }
@@ -140,7 +154,7 @@
 
                     default:
                         {
-                            var message = $"[[What?]] rootMember.Kind(): {rootMember.Kind().ToString()}";
+                            var message = $"[[What? 143]] rootMember.Kind(): {rootMember.Kind().ToString()}";
 
                             recordExList.Add(new RecordEx(
                                 recordObj: new Record(
@@ -163,7 +177,7 @@
         }
 
         /// <summary>
-        /// class 型の定義を解析
+        /// class 宣言を解析
         /// </summary>
         static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string @namespace, ClassDeclarationSyntax programDeclaration)
         {
@@ -175,9 +189,6 @@
                     // フィールドの宣言部なら
                     case SyntaxKind.FieldDeclaration:
                         {
-                            //
-                            // プログラム中の宣言メンバーの１つ目
-                            //
                             var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
                             //            fullString:         /// <summary>
                             //                                /// ?? 章Idの前に
@@ -192,6 +203,18 @@
                         }
                         break;
 
+                    // メソッドの宣言部なら
+                    case SyntaxKind.MethodDeclaration:
+                        {
+                            var methodDeclaration = (MethodDeclarationSyntax)programDeclarationMember;
+
+                            var record = ParseMethod(
+                                methodDeclaration: methodDeclaration,
+                                // ネームスペース.親クラス名　とつなげる
+                                @namespace: $"{@namespace}.{programDeclaration.Identifier.ToString()}");
+                            setRecord(record);
+                        }
+                        break;
 
                     // サブ列挙型
                     case SyntaxKind.EnumDeclaration:
@@ -206,7 +229,7 @@
 
                     default:
                         {
-                            var message = $"[[What?]] rootMember.Kind(): {programDeclarationMember.Kind().ToString()}";
+                            var message = $"[[What? 224]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
                                     type: string.Empty,
@@ -247,7 +270,7 @@
 
                     default:
                         {
-                            var message = $"[[What?]] rootMember.Kind(): {programDeclarationMember.Kind().ToString()}";
+                            var message = $"[[What? 265]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
 
                             setRecord(new Record(
                                     type: string.Empty,
@@ -387,6 +410,220 @@
                 name: name,
                 value: value,
                 summary: summaryText);
+        }
+
+        /// <summary>
+        /// メソッド解析
+        /// </summary>
+        /// <param name="methodDeclaration"></param>
+        /// <returns></returns>
+        static Record ParseMethod(MethodDeclarationSyntax methodDeclaration, string @namespace)
+        {
+            var builder = new StringBuilder();
+
+            //
+            // 引数の個数か？
+            //
+            // builder.AppendLine($"Arity:                         {methodDeclaration.Arity}");
+            // Arity:                         1
+            // Arity:                         0
+
+            //
+            // アノテーションか？
+            //
+            // builder.AppendLine($"AttributeLists:                {methodDeclaration.AttributeLists}");
+            // AttributeLists:                
+            // AttributeLists:                [Conditional(""____DEBUG__UTIL__NEVER__DEFINED__SYMBOL__NAME____"")]
+            // AttributeLists:                [Conditional(""DEBUG_UTIL_TEST_LOG"")]
+
+            //
+            // 本文だろうか？
+            //
+            // builder.AppendLine($"Body:                          {methodDeclaration.Body}");
+
+            //
+            // ジェネリック型への制約か？
+            //
+            // builder.AppendLine($"ConstraintClauses:             {methodDeclaration.ConstraintClauses}");
+            // ConstraintClauses:             
+            // ConstraintClauses:             where T : IComparable<T>
+            // ConstraintClauses:             where TEnum : struct
+            // ConstraintClauses:             where T : class
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ContainsAnnotations:           {methodDeclaration.ContainsAnnotations}");
+            // ContainsAnnotations:           False
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ContainsDiagnostics:           {methodDeclaration.ContainsDiagnostics}");
+            // ContainsDiagnostics:           False
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ContainsDirectives:            {methodDeclaration.ContainsDirectives}");
+            // ContainsDirectives:            True
+            // ContainsDirectives:            False
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ContainsSkippedText:           {methodDeclaration.ContainsSkippedText}");
+            // ContainsSkippedText:           False
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ExplicitInterfaceSpecifier:    {methodDeclaration.ExplicitInterfaceSpecifier}");
+            // ExplicitInterfaceSpecifier:    
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ExpressionBody:                {methodDeclaration.ExpressionBody}");
+            // ExpressionBody:                
+
+            //
+            // コードの記述の開始文字、終了文字位置か？
+            //
+            // builder.AppendLine($"FullSpan:                      {methodDeclaration.FullSpan}");
+            // FullSpan:                      [36254..36638)
+            // FullSpan:                      [487..951)
+
+            //
+            // 多分、前方に付いている文字の固まりがあるかどうかだと思う
+            //
+            // builder.AppendLine($"HasLeadingTrivia:              {methodDeclaration.HasLeadingTrivia}");
+            // HasLeadingTrivia:              True
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"HasStructuredTrivia:           {methodDeclaration.HasStructuredTrivia}");
+            // HasStructuredTrivia:           True
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"HasTrailingTrivia:             {methodDeclaration.HasTrailingTrivia}");
+            // HasTrailingTrivia:             True
+
+            //
+            // 関数名
+            //
+            // builder.AppendLine($"Identifier:                    {methodDeclaration.Identifier}");
+            // Identifier:                    Start
+            // Identifier:                    Stop
+            // Identifier:                    OnDisable
+            // Identifier:                    GetTextUnicodeHalfwidthCount
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"IsMissing:                     {methodDeclaration.IsMissing}");
+            // IsMissing:                     False
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"IsStructuredTrivia:            {methodDeclaration.IsStructuredTrivia}");
+            // IsStructuredTrivia:            False
+
+            //
+            // プログラミング言語の種類
+            //
+            // builder.AppendLine($"Language:                      {methodDeclaration.Language}");
+            // Language:                      C#
+
+            //
+            // 修飾子
+            //
+            // builder.AppendLine($"Modifiers:                     {methodDeclaration.Modifiers}");
+            // Modifiers:                     public static
+            // Modifiers:                     private
+
+            //
+            // 引数のリストの記述
+            //
+            // builder.AppendLine($"ParameterList:                 {methodDeclaration.ParameterList}");
+            // ParameterList:                 (IEnumerator routine)
+            // ParameterList:                 (ref Coroutine coroutine)
+            // ParameterList:                 (int lhs, int rhs, int min = int.MinValue, int max = int.MaxValue)
+            // ParameterList:                 (
+            // bool condition,
+            // [CallerLineNumber] int sourceLineNumber = 0,
+            // [CallerFilePath] string sourceFilePath = "",
+            // [CallerMemberName] string memberName = "")
+
+            //
+            // これを含むソースコード本文か？
+            //
+            // builder.AppendLine($"Parent:                        {methodDeclaration.Parent}");
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"ParentTrivia:                  {methodDeclaration.ParentTrivia}");
+            // ParentTrivia:                  
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"RawKind:                       {methodDeclaration.RawKind}");
+            // RawKind:                       8875
+
+            //
+            // 戻り値の型の記述
+            //
+            // builder.AppendLine($"ReturnType:                    {methodDeclaration.ReturnType}");
+            // ReturnType:                    Coroutine
+            // ReturnType:                    void
+            // ReturnType:                    IEnumerable<(T item, int index)>
+
+            //
+            // なんだろう？
+            //
+            // builder.AppendLine($"SemicolonToken:                {methodDeclaration.SemicolonToken}");
+            // SemicolonToken:                
+
+            //
+            // 文字開始位置、終了位置か？
+            //
+            // builder.AppendLine($"Span:                          {methodDeclaration.Span}");
+            // Span:                          [36415..36636)
+            // Span:                          [476..667)
+
+            //
+            // 文字開始位置か？
+            //
+            // builder.AppendLine($"SpanStart:                     {methodDeclaration.SpanStart}");
+            // SpanStart:                     36415
+            // SpanStart:                     493
+
+            //
+            // 長いソースコード？
+            //
+            // builder.AppendLine($"SyntaxTree:                    {methodDeclaration.SyntaxTree}");
+
+            //
+            // 型パラメーターのリスト？
+            //
+            // builder.AppendLine($"TypeParameterList:             {methodDeclaration.TypeParameterList}");
+            // TypeParameterList:             
+            // TypeParameterList:             <T>
+            // TypeParameterList:             <TEnum>
+
+            return new Record(
+                type: @namespace,
+                access: string.Empty,
+                memberType: string.Empty,
+                name: "[[Method]]",
+                value: string.Empty,
+                summary: builder.ToString());
         }
 
         /// <summary>
