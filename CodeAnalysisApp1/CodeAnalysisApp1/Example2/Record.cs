@@ -70,7 +70,7 @@
 
         static Regex RegexStartEquals = new Regex(@"^\s*=", RegexOptions.Multiline);
         static Regex RegexStartDquotEquals = new Regex(@"^\s*""\s*=", RegexOptions.Multiline);
-        // static Regex RegexRemoveDquot = new Regex(@"^\s*""(.*)""\s*$", RegexOptions.Multiline);
+        static Regex RegexRemoveDquot = new Regex(@"^\s*""(.*)""\s*$", RegexOptions.Singleline);
 
         /// <summary>
         /// グーグル・スプレッドシート向けのエスケープ
@@ -108,33 +108,22 @@
                 {
                     escapedValue = value;
 
-                    // これからダブルクォーテーションで挟むので、既存のダブルクォーテーションを二重にする
-                    // escapedValue = value.Replace("\"", "\"\"");
+                    // いったん両端のダブルクォーテーションを外す
+                    var match = RegexRemoveDquot.Match(value);
+                    if (match.Success)
+                    {
+                        escapedValue = match.Groups[1].Value;
 
-                    //if (value.Contains(","))
-                    //{
-                    //    // さらにカンマが含まれているケース
-                    //    // CSV例： "=T(""= new Dictionary<string, AssetEntity>()"")"
-                    //}
-                    //else
-                    //{
-                    //    // CSV例： "=T(""= new Dictionary<string>()"")"
-                    //}
+                        // これからダブルクォーテーションで挟むので、既存のダブルクォーテーションを二重にする
+                        escapedValue = escapedValue.Replace("\"", "\"\"");
 
-
-                    escapedValue = $"\"=T(\"{escapedValue}\")\"";
-
-                    //// 両端のダブルクォーテーションを外す
-                    //var match = RegexRemoveDquot.Match(value);
-                    //if (match.Success)
-                    //{
-                    //    escapedValue = $"=T({match.Groups[1]})";
-                    //}
-                    //else
-                    //{
-                    //    // パース・エラー。エスケープを止める
-                    //    escapedValue = value;
-                    //}
+                        escapedValue = $"\"=T(\"\"{escapedValue}\"\")\"";
+                    }
+                    else
+                    {
+                        // パース・エラー
+                        escapedValue = $"[[Parse Error 125]] {value}";
+                    }
                 }
                 else
                 {
