@@ -126,22 +126,6 @@
                         }
                         break;
 
-                    // メソッドの宣言部なら
-                    case SyntaxKind.MethodDeclaration:
-                        {
-                            var methodDeclaration = (MethodDeclarationSyntax)rootMember;
-
-                            var record = ParseMethod(
-                                methodDeclaration: methodDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty);
-
-                            recordExList.Add(new RecordEx(
-                                recordObj: record,
-                                fileLocation: filePathToRead));
-                        }
-                        break;
-
                     // フィールドの宣言部なら
                     case SyntaxKind.FieldDeclaration:
                         {
@@ -157,6 +141,40 @@
                                         recordObj: record,
                                         fileLocation: filePathToRead));
                                 });
+                        }
+                        break;
+
+                    // デリゲートの宣言部なら
+                    case SyntaxKind.DelegateDeclaration:
+                        {
+                            var delegateDeclaration = (DelegateDeclarationSyntax)rootMember;
+
+                            ParseDelegate(
+                                delegateDeclaration: delegateDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty,
+                                setRecord: (record) =>
+                                {
+                                    recordExList.Add(new RecordEx(
+                                        recordObj: record,
+                                        fileLocation: filePathToRead));
+                                });
+                        }
+                        break;
+
+                    // メソッドの宣言部なら
+                    case SyntaxKind.MethodDeclaration:
+                        {
+                            var methodDeclaration = (MethodDeclarationSyntax)rootMember;
+
+                            var record = ParseMethod(
+                                methodDeclaration: methodDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty);
+
+                            recordExList.Add(new RecordEx(
+                                recordObj: record,
+                                fileLocation: filePathToRead));
                         }
                         break;
 
@@ -398,6 +416,18 @@
                         }
                         break;
 
+                    // デリゲート宣言部なら
+                    case SyntaxKind.DelegateDeclaration:
+                        {
+                            var delegateDeclaration = (DelegateDeclarationSyntax)memberDeclaration;
+
+                            ParseDelegate(
+                                delegateDeclaration: delegateDeclaration,
+                                codeLocation: codeLocation,
+                                setRecord: setRecord);
+                        }
+                        break;
+
                     // コンストラクター宣言
                     case SyntaxKind.ConstructorDeclaration:
                         {
@@ -424,7 +454,7 @@
 
                     default:
                         {
-                            var message = $"[[What? 285]] programDeclarationMember.Kind(): {memberDeclaration.Kind().ToString()}";
+                            var message = $"[[What? 445]] programDeclarationMember.Kind(): {memberDeclaration.Kind().ToString()}";
 
                             setRecord(new Record(
                                 kind: "[[What?]]",
@@ -1203,6 +1233,199 @@
                     summary: summaryText));
                 // summary: builder.ToString())); // テスト用
             }
+        }
+
+        /// <summary>
+        /// デリゲート宣言の解析
+        /// </summary>
+        /// <param name="delegateDeclaration">デリゲート宣言</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <param name="setRecord">結果</param>
+        static void ParseDelegate(
+            DelegateDeclarationSyntax delegateDeclaration,
+            string codeLocation,
+            LazyCoding.SetValue<Record> setRecord)
+        {
+            // var builder = new StringBuilder();
+
+            //
+            // 引数の数か？
+            //
+            // builder.Append($" ■Arity:                       {delegateDeclaration.Arity}");
+            // ■Arity:                       0
+
+            //
+            // アノテーションか？
+            //
+            // builder.Append($" ■AttributeLists:              {delegateDeclaration.AttributeLists}");
+            // ■AttributeLists:              
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ConstraintClauses:           {delegateDeclaration.ConstraintClauses}");
+            // ■ConstraintClauses:           
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsAnnotations:         {delegateDeclaration.ContainsAnnotations}");
+            // ■ContainsAnnotations:         False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDiagnostics:         {delegateDeclaration.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:         False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDirectives:          {delegateDeclaration.ContainsDirectives}");
+            // ■ContainsDirectives:          False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsSkippedText:         {delegateDeclaration.ContainsSkippedText}");
+            // ■ContainsSkippedText:         False
+
+            //
+            // デリゲート予約語
+            //
+            // builder.Append($" ■DelegateKeyword:             {delegateDeclaration.DelegateKeyword}");
+            // ■DelegateKeyword:             delegate
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■FullSpan:                    {delegateDeclaration.FullSpan}");
+            // ■FullSpan:                    [10617..10837)
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasLeadingTrivia:            {delegateDeclaration.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:            True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasStructuredTrivia:         {delegateDeclaration.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:         True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasTrailingTrivia:           {delegateDeclaration.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:           True
+
+            //
+            // デリゲート名
+            //
+            // builder.Append($" ■Identifier:                  {delegateDeclaration.Identifier}");
+            // ■Identifier:                  ParameterTypeConvert
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsMissing:                   {delegateDeclaration.IsMissing}");
+            // ■IsMissing:                   False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsStructuredTrivia:          {delegateDeclaration.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:          False
+
+            //
+            // プログラミング言語の種類
+            //
+            // builder.Append($" ■Language:                    {delegateDeclaration.Language}");
+            // ■Language:                    C#
+
+            //
+            // 修飾子
+            //
+            // builder.Append($" ■Modifiers:                   {delegateDeclaration.Modifiers}");
+            // ■Modifiers:                   
+
+            //
+            // 引数のリスト
+            //
+            // builder.Append($" ■ParameterList:               {delegateDeclaration.ParameterList}");
+            // ■ParameterList:               (string value)
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■Parent:                      {delegateDeclaration.Parent}");
+            // 
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ParentTrivia:                {delegateDeclaration.ParentTrivia}");
+            // ■ParentTrivia:                
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■RawKind:                     {delegateDeclaration.RawKind}");
+            // ■RawKind:                     8859
+
+            //
+            // 戻り値の型
+            //
+            // builder.Append($" ■ReturnType:                  {delegateDeclaration.ReturnType}");
+            // ■ReturnType:                  object
+
+            //
+            // セミコロン
+            //
+            // builder.Append($" ■SemicolonToken:              {delegateDeclaration.SemicolonToken}");
+            // ■SemicolonToken:              ;
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■Span:                        {delegateDeclaration.Span}");
+            // ■Span:                        [10784..10835)
+
+            //
+            // 開始文字位置か
+            //
+            // builder.Append($" ■SpanStart:                   {delegateDeclaration.SpanStart}");
+            // ■SpanStart:                   10784
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■SyntaxTree:                  {delegateDeclaration.SyntaxTree}");
+            //
+
+            //
+            // 型パラメーターのリスト
+            //
+            // builder.Append($" ■TypeParameterList:           {delegateDeclaration.TypeParameterList}");
+            // ■TypeParameterList:           
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(delegateDeclaration.GetLeadingTrivia());
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            setRecord(new Record(
+                kind: "Delegate",                                           // 種類
+                codeLocation: codeLocation,                                 // コードのある場所
+                access: delegateDeclaration.Modifiers.ToString(),           // 修飾子
+                memberType: delegateDeclaration.ReturnType.ToString(),      // 戻り値の型
+                name: delegateDeclaration.Identifier.ToString(),            // デリゲート名
+                value: string.Empty,                                        // 値は無し
+                summary: summaryText));
+                // summary: builder.ToString())); // テスト用
         }
 
         /// <summary>
