@@ -185,6 +185,11 @@
             setRecordExList(recordExList);
         }
 
+        /// <summary>
+        /// 名前空間解析
+        /// </summary>
+        /// <param name="setRecord"></param>
+        /// <param name="namespaceDeclaration"></param>
         static void ParseNamespaceDeclaration(LazyCoding.SetValue<Record> setRecord, NamespaceDeclarationSyntax namespaceDeclaration)
         {
             // クラスが２個定義されてるとか、列挙型が定義されてるとかに対応
@@ -325,6 +330,9 @@
         /// </summary>
         static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, ClassDeclarationSyntax classDeclaration)
         {
+            // ネームスペース.クラス名　とつなげる
+            codeLocation = $"{codeLocation}.{classDeclaration.Identifier.ToString()}";
+
             // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
             foreach (var memberDeclaration in classDeclaration.Members)
             {
@@ -337,8 +345,7 @@
 
                             ParseClassDeclaration(
                                 setRecord: setRecord,
-                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{codeLocation}.{subClassDeclaration.Identifier.ToString()}.{subClassDeclaration.Identifier.ToString()}",
+                                codeLocation: codeLocation,
                                 classDeclaration: subClassDeclaration);
                         }
                         break;
@@ -350,8 +357,7 @@
 
                             var record = ParseStruct(
                                 structDeclaration: structDeclaration,
-                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{structDeclaration.Identifier.ToString()}");
+                                codeLocation: codeLocation);
                             setRecord(record);
                         }
                         break;
@@ -363,8 +369,7 @@
 
                             ParseEnumDeclaration(
                                 setRecord: setRecord,
-                                // ネームスペース.親クラス名.自列挙型名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}.{enumDeclaration.Identifier.ToString()}",
+                                codeLocation: codeLocation,
                                 enumDeclaration: enumDeclaration);
                         }
                         break;
@@ -376,8 +381,7 @@
 
                             ParseField(
                                 fieldDeclaration: fieldDeclaration,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}",
+                                codeLocation: codeLocation,
                                 setRecord: setRecord);
                         }
                         break;
@@ -389,8 +393,7 @@
 
                             var record = ParseProperty(
                                 propertyDeclaration: propertyDeclaration,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}");
+                                codeLocation: codeLocation);
                             setRecord(record);
                         }
                         break;
@@ -402,8 +405,7 @@
 
                             var record = ParseConstructor(
                                 constructorDeclaration: constructorDeclaration,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}");
+                                codeLocation: codeLocation);
                             setRecord(record);
                         }
                         break;
@@ -415,8 +417,7 @@
 
                             var record = ParseMethod(
                                 methodDeclaration: methodDeclaration,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: $"{codeLocation}.{classDeclaration.Identifier.ToString()}");
+                                codeLocation: codeLocation);
                             setRecord(record);
                         }
                         break;
@@ -427,7 +428,7 @@
 
                             setRecord(new Record(
                                 kind: "[[What?]]",
-                                codeLocation: string.Empty,
+                                codeLocation: codeLocation,
                                 access: string.Empty,
                                 memberType: string.Empty,
                                 name: string.Empty,
@@ -1864,7 +1865,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
-                kind:"EnumMember",
+                kind: "EnumMember",
                 codeLocation: codeLocation,
                 access: modifiers.ToString(),
                 memberType: string.Empty,
