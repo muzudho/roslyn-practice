@@ -162,6 +162,24 @@
                         }
                         break;
 
+                    // イベント・フィールド宣言
+                    case SyntaxKind.EventFieldDeclaration:
+                        {
+                            var eventFieldDeclaration = (EventFieldDeclarationSyntax)rootMember;
+
+                            ParseEventField(
+                                eventFieldDeclaration: eventFieldDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty,
+                                setRecord: (record) =>
+                                {
+                                    recordExList.Add(new RecordEx(
+                                        recordObj: record,
+                                        fileLocation: filePathToRead));
+                                });
+                        }
+                        break;
+
                     // メソッドの宣言部なら
                     case SyntaxKind.MethodDeclaration:
                         {
@@ -423,6 +441,18 @@
 
                             ParseDelegate(
                                 delegateDeclaration: delegateDeclaration,
+                                codeLocation: codeLocation,
+                                setRecord: setRecord);
+                        }
+                        break;
+
+                    // イベント・フィールド宣言
+                    case SyntaxKind.EventFieldDeclaration:
+                        {
+                            var eventFieldDeclaration = (EventFieldDeclarationSyntax)memberDeclaration;
+
+                            ParseEventField(
+                                eventFieldDeclaration: eventFieldDeclaration,
                                 codeLocation: codeLocation,
                                 setRecord: setRecord);
                         }
@@ -1425,8 +1455,296 @@
                 name: delegateDeclaration.Identifier.ToString(),            // デリゲート名
                 value: string.Empty,                                        // 値は無し
                 summary: summaryText));
-                // summary: builder.ToString())); // テスト用
+            // summary: builder.ToString())); // テスト用
         }
+
+        /// <summary>
+        /// イベント・フィールド宣言の解析
+        /// </summary>
+        /// <param name="eventFieldDeclaration">イベント・フィールド宣言</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <param name="setRecord">結果</param>
+        static void ParseEventField(
+            EventFieldDeclarationSyntax eventFieldDeclaration,
+            string codeLocation,
+            LazyCoding.SetValue<Record> setRecord)
+        {
+            var builder = new StringBuilder();
+
+            //
+            // アノテーション
+            //
+            // builder.Append($" ■AttributeLists:          {eventFieldDeclaration.AttributeLists}");
+            // ■AttributeLists:          
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsAnnotations:     {eventFieldDeclaration.ContainsAnnotations}");
+            // ■ContainsAnnotations:     False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDiagnostics:     {eventFieldDeclaration.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:     False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsDirectives:      {eventFieldDeclaration.ContainsDirectives}");
+            // ■ContainsDirectives:      False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ContainsSkippedText:     {eventFieldDeclaration.ContainsSkippedText}");
+            // ■ContainsSkippedText:     False
+
+            //
+            // 宣言文
+            //
+            // builder.Append($" ■Declaration:             {eventFieldDeclaration.Declaration}");
+            // ■Declaration:             Action<string> ScenePlayEndEvent
+            // ■Declaration:             Action<DebugToolButton> OnSelected
+            // ■Declaration:             Action<int> onDragIndexChanged
+            {
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsAnnotations:     {eventFieldDeclaration.Declaration.ContainsAnnotations}");
+                // ■Declaration.ContainsAnnotations:     False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsDiagnostics:     {eventFieldDeclaration.Declaration.ContainsDiagnostics}");
+                // ■Declaration.ContainsDiagnostics:     False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsDirectives:      {eventFieldDeclaration.Declaration.ContainsDirectives}");
+                // ■Declaration.ContainsDirectives:      False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ContainsSkippedText:     {eventFieldDeclaration.Declaration.ContainsSkippedText}");
+                // ■Declaration.ContainsSkippedText:     False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.FullSpan:                {eventFieldDeclaration.Declaration.FullSpan}");
+                // ■Declaration.FullSpan:                [732..764)
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.HasLeadingTrivia:        {eventFieldDeclaration.Declaration.HasLeadingTrivia}");
+                // ■Declaration.HasLeadingTrivia:        False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.HasStructuredTrivia:     {eventFieldDeclaration.Declaration.HasStructuredTrivia}");
+                // ■Declaration.HasStructuredTrivia:     False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.HasTrailingTrivia:       {eventFieldDeclaration.Declaration.HasTrailingTrivia}");
+                // ■Declaration.HasTrailingTrivia:       False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.IsMissing:               {eventFieldDeclaration.Declaration.IsMissing}");
+                // ■Declaration.IsMissing:               False
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.IsStructuredTrivia:      {eventFieldDeclaration.Declaration.IsStructuredTrivia}");
+                // ■Declaration.IsStructuredTrivia:      False
+
+                //
+                // プログラミング言語の種類
+                //
+                builder.Append($" ■Declaration.Language:                {eventFieldDeclaration.Declaration.Language}");
+                // ■Declaration.Language:                C#
+
+                //
+                // 自身を含む全体の文字列
+                //
+                builder.Append($" ■Declaration.Parent:                  {eventFieldDeclaration.Declaration.Parent}");
+                // ■Declaration.Parent:                  public static event Action<string> ScenePlayEndEvent;
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.ParentTrivia:            {eventFieldDeclaration.Declaration.ParentTrivia}");
+                // ■Declaration.ParentTrivia:            
+
+                //
+                // なんだろう？
+                //
+                builder.Append($" ■Declaration.RawKind:                 {eventFieldDeclaration.Declaration.RawKind}");
+                // ■Declaration.RawKind:                 8794
+
+                //
+                // 開始文字位置、終了文字位置か？
+                //
+                builder.Append($" ■Declaration.Span:                    {eventFieldDeclaration.Declaration.Span}");
+                // ■Declaration.Span:                    [732..764)
+
+                //
+                // 開始文字位置か？
+                //
+                builder.Append($" ■Declaration.SpanStart:               {eventFieldDeclaration.Declaration.SpanStart}");
+                // ■Declaration.SpanStart:               732
+
+                //
+                // 出力長そう
+                //
+                // builder.Append($" ■Declaration.SyntaxTree:              {eventFieldDeclaration.Declaration.SyntaxTree}");
+                //
+
+                //
+                // 型
+                //
+                builder.Append($" ■Declaration.Type:                    {eventFieldDeclaration.Declaration.Type}");
+                // ■Declaration.Type:                    Action<string>
+
+                //
+                // 変数のリスト
+                //
+                builder.Append($" ■Declaration.Variables:               {eventFieldDeclaration.Declaration.Variables}");
+                // ■Declaration.Variables:               ScenePlayEndEvent
+            }
+
+            //
+            // event 予約語
+            //
+            // builder.Append($" ■EventKeyword:            {eventFieldDeclaration.EventKeyword}");
+            // ■EventKeyword:            event
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■FullSpan:                {eventFieldDeclaration.FullSpan}");
+            // ■FullSpan:                [627..767)
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasLeadingTrivia:        {eventFieldDeclaration.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:        True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasStructuredTrivia:     {eventFieldDeclaration.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:     True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■HasTrailingTrivia:       {eventFieldDeclaration.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:       True
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsMissing:               {eventFieldDeclaration.IsMissing}");
+            // ■IsMissing:               False
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■IsStructuredTrivia:      {eventFieldDeclaration.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:      False
+
+            //
+            // プログラミング言語の種類
+            //
+            // builder.Append($" ■Language:                {eventFieldDeclaration.Language}");
+            // ■Language:                C#
+
+            //
+            // 修飾子
+            //
+            // builder.Append($" ■Modifiers:               {eventFieldDeclaration.Modifiers}");
+            // ■Modifiers:               public static
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■Parent:                  {eventFieldDeclaration.Parent}");
+            //
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■ParentTrivia:            {eventFieldDeclaration.ParentTrivia}");
+            // ■ParentTrivia:            
+
+            //
+            // なんだろう？
+            //
+            // builder.Append($" ■RawKind:                 {eventFieldDeclaration.RawKind}");
+            // ■RawKind:                 8874
+
+            //
+            // セミコロン
+            //
+            // builder.Append($" ■SemicolonToken:          {eventFieldDeclaration.SemicolonToken}");
+            // ■SemicolonToken:          ;
+
+            //
+            // 開始文字位置、終了文字位置か？
+            //
+            // builder.Append($" ■Span:                    {eventFieldDeclaration.Span}");
+            // ■Span:                    [712..765)
+
+            //
+            // 開始文字位置か？
+            //
+            // builder.Append($" ■SpanStart:               {eventFieldDeclaration.SpanStart}");
+            // ■SpanStart:               712
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■SyntaxTree:              {eventFieldDeclaration.SyntaxTree}");
+            //
+
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(eventFieldDeclaration.GetLeadingTrivia());
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            //
+            // 変数は複数個ある
+            //
+            foreach (var variable in eventFieldDeclaration.Declaration.Variables)
+            {
+                setRecord(new Record(
+                    kind: "EventField",                                                 // 種類
+                    codeLocation: codeLocation,                                         // コードのある場所
+                    access: eventFieldDeclaration.Modifiers.ToString(),                 // 修飾子
+                    memberType: eventFieldDeclaration.Declaration.Type.ToString(),      // 戻り値の型
+                    name: variable.Identifier.ToString(),                               // デリゲート名
+                    value: string.Empty,                                                // 値は無し
+                    summary: summaryText));
+                // summary: builder.ToString())); // テスト用
+            }
+        }
+
 
         /// <summary>
         /// プロパティ解析
