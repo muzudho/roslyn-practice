@@ -126,10 +126,10 @@
                     {
                         var structDeclarationMember = (StructDeclarationSyntax)memberDeclaration;
 
-                        var record = ParseStruct(
+                        ParseStruct(
+                            setRecord: setRecord,
                             structDeclaration: structDeclarationMember,
                             codeLocation: codeLocation);
-                        setRecord(record);
                     }
                     break;
 
@@ -142,6 +142,19 @@
                             setRecord: setRecord,
                             codeLocation: codeLocation,
                             enumDeclaration: enumDeclarationMember);
+                    }
+                    break;
+
+                // 列挙型メンバーの宣言部なら
+                case SyntaxKind.EnumMemberDeclaration:
+                    {
+                        //
+                        // プログラム中の宣言メンバーの１つ目
+                        //
+                        var enumMemberDeclarationMember = (EnumMemberDeclarationSyntax)memberDeclaration;
+
+                        var record = ParseEnum(enumMemberDeclarationMember, codeLocation);
+                        setRecord(record);
                     }
                     break;
 
@@ -285,6 +298,34 @@
         /// </summary>
         static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, ClassDeclarationSyntax classDeclaration)
         {
+            // var builder = new StringBuilder();
+
+            // builder.Append($" ■Arity:                   {classDeclaration.Arity}");
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = classDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            setRecord(new Record(
+                kind: "Classt",
+                codeLocation: codeLocation,
+                access: classDeclaration.Modifiers.ToString(),          // 修飾子
+                memberType: string.Empty,                               // 型は無し
+                name: classDeclaration.Identifier.ToString(),           // クラス名
+                value: string.Empty,                                    // 値は空  
+                summary: summaryText));                                 // ドキュメント・コメントの summary
+
+            // summary: builder.ToString());        // テスト用
+
+            //
+            // メンバー解析
+            // ============
+            //
+
             // ネームスペース.クラス名　とつなげる
             codeLocation = $"{codeLocation}.{classDeclaration.Identifier.ToString()}";
 
@@ -304,7 +345,7 @@
         /// <param name="structDeclaration">構造体宣言</param>
         /// <param name="codeLocation">コードのある場所</param>
         /// <returns>解析結果</returns>
-        static Record ParseStruct(StructDeclarationSyntax structDeclaration, string codeLocation)
+        static void ParseStruct(LazyCoding.SetValue<Record> setRecord, StructDeclarationSyntax structDeclaration, string codeLocation)
         {
             // var builder = new StringBuilder();
 
@@ -488,16 +529,33 @@
             var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
             string summaryText = ParseDocumentComment(documentCommentText);
 
-            return new Record(
+            setRecord(new Record(
                 kind: "Struct",
                 codeLocation: codeLocation,
                 access: structDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: string.Empty,                               // 戻り値の型
                 name: structDeclaration.Identifier.ToString(),          // 構造体名
                 value: string.Empty,                                    // 値は空  
-                summary: summaryText);                                  // ドキュメント・コメントの summary
+                summary: summaryText));                                  // ドキュメント・コメントの summary
 
-            // テスト用 summary: builder.ToString()
+            // summary: builder.ToString()));       // テスト用
+
+            //
+            // メンバー解析
+            // ============
+            //
+
+            // ネームスペース.クラス名　とつなげる
+            codeLocation = $"{codeLocation}.{structDeclaration.Identifier.ToString()}";
+
+            // サブ・クラスが２個定義されてるとか、サブ・列挙型が定義されてるとかに対応
+            foreach (var memberDeclaration in structDeclaration.Members)
+            {
+                ParseMember(
+                    setRecord: setRecord,
+                    memberDeclaration: memberDeclaration,
+                    codeLocation: codeLocation);
+            }
         }
 
         /// <summary>
@@ -505,40 +563,39 @@
         /// </summary>
         static void ParseEnumDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, EnumDeclarationSyntax enumDeclaration)
         {
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = enumDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            setRecord(new Record(
+                kind: "Struct",
+                codeLocation: codeLocation,
+                access: enumDeclaration.Modifiers.ToString(),           // 修飾子
+                memberType: string.Empty,                               // 戻り値の型
+                name: enumDeclaration.Identifier.ToString(),            // 構造体名
+                value: string.Empty,                                    // 値は空  
+                summary: summaryText));                                 // ドキュメント・コメントの summary
+
+            // summary: builder.ToString()));       // テスト用
+
+            //
+            // メンバー解析
+            // ============
+            //
+
+            // ネームスペース.列挙型名　とつなげる
+            codeLocation = $"{codeLocation}.{enumDeclaration.Identifier.ToString()}";
+
             foreach (var programDeclarationMember in enumDeclaration.Members)
             {
-                switch (programDeclarationMember.Kind())
-                {
-                    // フィールドの宣言部なら
-                    case SyntaxKind.EnumMemberDeclaration:
-                        {
-                            //
-                            // プログラム中の宣言メンバーの１つ目
-                            //
-                            var fieldDeclaration = programDeclarationMember;
-
-                            var record = ParseEnum(fieldDeclaration, codeLocation);
-                            setRecord(record);
-                        }
-                        break;
-
-                    default:
-                        {
-                            var message = $"[[What? 265]] programDeclarationMember.Kind(): {programDeclarationMember.Kind().ToString()}";
-
-                            setRecord(new Record(
-                                kind: "[[What?]]",
-                                codeLocation: string.Empty,
-                                access: string.Empty,
-                                memberType: string.Empty,
-                                name: string.Empty,
-                                value: string.Empty,
-                                summary: message));
-
-                            Console.WriteLine(message);
-                        }
-                        break;
-                }
+                ParseMember(
+                    setRecord: setRecord,
+                    memberDeclaration: programDeclarationMember,
+                    codeLocation: codeLocation);
             }
         }
 
