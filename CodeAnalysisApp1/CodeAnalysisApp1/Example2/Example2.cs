@@ -126,6 +126,22 @@
                         }
                         break;
 
+                    // デストラクター宣言
+                    case SyntaxKind.DestructorDeclaration:
+                        {
+                            var destructorDeclaration = (DestructorDeclarationSyntax)rootMember;
+
+                            var record = ParseDestructor(
+                                destructorDeclaration: destructorDeclaration,
+                                // トップ・レベルだから、ネームスペースは無い
+                                codeLocation: string.Empty);
+
+                            recordExList.Add(new RecordEx(
+                                recordObj: record,
+                                fileLocation: filePathToRead));
+                        }
+                        break;
+
                     // フィールドの宣言部なら
                     case SyntaxKind.FieldDeclaration:
                         {
@@ -314,6 +330,20 @@
                         }
                         break;
 
+                    // デストラクター宣言
+                    case SyntaxKind.DestructorDeclaration:
+                        {
+                            var destructorDeclaration = (DestructorDeclarationSyntax)memberDeclaration;
+
+                            var record = ParseDestructor(
+                                destructorDeclaration: destructorDeclaration,
+                                // ネームスペース.親クラス名　とつなげる
+                                codeLocation: namespaceDeclaration.Name.ToString());
+
+                            setRecord(record);
+                        }
+                        break;
+
                     // メソッドの宣言部なら
                     case SyntaxKind.MethodDeclaration:
                         {
@@ -465,6 +495,18 @@
 
                             var record = ParseConstructor(
                                 constructorDeclaration: constructorDeclaration,
+                                codeLocation: codeLocation);
+                            setRecord(record);
+                        }
+                        break;
+
+                    // デストラクター宣言
+                    case SyntaxKind.DestructorDeclaration:
+                        {
+                            var destructorDeclaration = (DestructorDeclarationSyntax)memberDeclaration;
+
+                            var record = ParseDestructor(
+                                destructorDeclaration: destructorDeclaration,
                                 codeLocation: codeLocation);
                             setRecord(record);
                         }
@@ -1957,7 +1999,8 @@
         /// コンストラクター解析
         /// </summary>
         /// <param name="constructorDeclaration">コンストラクター宣言</param>
-        /// <returns></returns>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <returns>解析結果</returns>
         static Record ParseConstructor(ConstructorDeclarationSyntax constructorDeclaration, string codeLocation)
         {
             // var builder = new StringBuilder();
@@ -2129,13 +2172,44 @@
         }
 
         /// <summary>
+        /// デストラクター解析
+        /// </summary>
+        /// <param name="destructorDeclaration">デストラクター宣言</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <returns>解析結果</returns>
+        static Record ParseDestructor(DestructorDeclarationSyntax destructorDeclaration, string codeLocation)
+        {
+            var builder = new StringBuilder();
+
+            // builder.Append($"Arity:                         {methodDeclaration.Arity}");
+
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = destructorDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            return new Record(
+                kind: "Constructor",
+                codeLocation: codeLocation,                                 // コードのある場所
+                access: destructorDeclaration.Modifiers.ToString(),         // 修飾子
+                memberType: string.Empty,                                   // 戻り値の型は無い
+                name: destructorDeclaration.Identifier.ToString(),          // 関数名
+                value: string.Empty,                                        // 値は空  
+                summary: summaryText);                                      // ドキュメント・コメントの summary
+
+            // テスト用 summary: builder.ToString()
+        }
+
+        /// <summary>
         /// メソッド解析
         /// </summary>
         /// <param name="methodDeclaration"></param>
         /// <returns></returns>
         static Record ParseMethod(MethodDeclarationSyntax methodDeclaration, string codeLocation)
         {
-            var builder = new StringBuilder();
+            // var builder = new StringBuilder();
 
             //
             // 引数の個数か？
