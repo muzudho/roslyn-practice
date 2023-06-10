@@ -35,23 +35,28 @@
 
             var recordExList = new List<RecordEx>();
 
-            foreach (var rootMember in root.Members)
+            // トップ・レベルだから、ネームスペースは無い
+            var codeLocation = string.Empty;
+
+            void setRecord(Record record)
             {
-                switch (rootMember.Kind())
+                recordExList.Add(new RecordEx(
+                    recordObj: record,
+                    fileLocation: filePathToRead));
+            }
+
+            foreach (var memberDeclaration in root.Members)
+            {
+                switch (memberDeclaration.Kind())
                 {
                     // ネームスペース宣言
                     case SyntaxKind.NamespaceDeclaration:
                         {
-                            var namespaceDeclaration = (NamespaceDeclarationSyntax)rootMember;
+                            var namespaceDeclarationMember = (NamespaceDeclarationSyntax)memberDeclaration;
 
                             ParseNamespaceDeclaration(
-                                setRecord: (record) =>
-                                {
-                                    recordExList.Add(new RecordEx(
-                                        recordObj: record,
-                                        fileLocation: filePathToRead));
-                                },
-                                namespaceDeclaration: namespaceDeclaration);
+                                setRecord: setRecord,
+                                namespaceDeclaration: namespaceDeclarationMember);
 
                         }
                         break;
@@ -59,18 +64,12 @@
                     // クラス宣言
                     case SyntaxKind.ClassDeclaration:
                         {
-                            var classDeclaration = (ClassDeclarationSyntax)rootMember;
+                            var classDeclarationMember = (ClassDeclarationSyntax)memberDeclaration;
 
                             ParseClassDeclaration(
-                                setRecord: (record) =>
-                                {
-                                    recordExList.Add(new RecordEx(
-                                        recordObj: record,
-                                        fileLocation: filePathToRead));
-                                },
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty,
-                                classDeclaration: classDeclaration);
+                                setRecord: setRecord,
+                                codeLocation: codeLocation,
+                                classDeclaration: classDeclarationMember);
                         }
                         break;
 
@@ -79,153 +78,129 @@
                     // 構造体宣言
                     case SyntaxKind.StructDeclaration:
                         {
-                            var structDeclaration = (StructDeclarationSyntax)rootMember;
+                            var structDeclarationMember = (StructDeclarationSyntax)memberDeclaration;
 
                             var record = ParseStruct(
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty,
-                                structDeclaration: structDeclaration);
+                                structDeclaration: structDeclarationMember,
+                                codeLocation: codeLocation);
 
-                            recordExList.Add(new RecordEx(
-                                recordObj: record,
-                                fileLocation: filePathToRead));
+                            setRecord(record);
                         }
                         break;
 
                     // 列挙型宣言
                     case SyntaxKind.EnumDeclaration:
                         {
-                            var enumsDeclaration = (EnumDeclarationSyntax)rootMember;
+                            var enumsDeclarationMember = (EnumDeclarationSyntax)memberDeclaration;
 
                             ParseEnumDeclaration(
-                                setRecord: (record) =>
-                                {
-                                    recordExList.Add(new RecordEx(
-                                        recordObj: record,
-                                        fileLocation: filePathToRead));
-                                },
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty,
-                                enumDeclaration: enumsDeclaration);
+                                setRecord: setRecord,
+                                codeLocation: codeLocation,
+                                enumDeclaration: enumsDeclarationMember);
                         }
                         break;
 
                     // コンストラクター宣言
                     case SyntaxKind.ConstructorDeclaration:
                         {
-                            var constructorDeclaration = (ConstructorDeclarationSyntax)rootMember;
+                            var constructorDeclarationMember = (ConstructorDeclarationSyntax)memberDeclaration;
 
                             var record = ParseConstructor(
-                                constructorDeclaration: constructorDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty);
+                                constructorDeclaration: constructorDeclarationMember,
+                                codeLocation: codeLocation);
 
-                            recordExList.Add(new RecordEx(
-                                recordObj: record,
-                                fileLocation: filePathToRead));
+                            setRecord(record);
                         }
                         break;
 
                     // デストラクター宣言
                     case SyntaxKind.DestructorDeclaration:
                         {
-                            var destructorDeclaration = (DestructorDeclarationSyntax)rootMember;
+                            var destructorDeclarationMember = (DestructorDeclarationSyntax)memberDeclaration;
 
                             var record = ParseDestructor(
-                                destructorDeclaration: destructorDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty);
+                                destructorDeclaration: destructorDeclarationMember,
+                                codeLocation: codeLocation);
 
-                            recordExList.Add(new RecordEx(
-                                recordObj: record,
-                                fileLocation: filePathToRead));
+                            setRecord(record);
                         }
                         break;
 
                     // フィールドの宣言部なら
                     case SyntaxKind.FieldDeclaration:
                         {
-                            var fieldDeclaration = (FieldDeclarationSyntax)rootMember;
+                            var fieldDeclarationMember = (FieldDeclarationSyntax)memberDeclaration;
 
                             ParseField(
-                                fieldDeclaration: fieldDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty,
-                                setRecord: (record) =>
-                                {
-                                    recordExList.Add(new RecordEx(
-                                        recordObj: record,
-                                        fileLocation: filePathToRead));
-                                });
+                                fieldDeclaration: fieldDeclarationMember,
+                                codeLocation: codeLocation,
+                                setRecord: setRecord);
                         }
                         break;
 
                     // デリゲートの宣言部なら
                     case SyntaxKind.DelegateDeclaration:
                         {
-                            var delegateDeclaration = (DelegateDeclarationSyntax)rootMember;
+                            var delegateDeclarationMember = (DelegateDeclarationSyntax)memberDeclaration;
 
                             ParseDelegate(
-                                delegateDeclaration: delegateDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty,
-                                setRecord: (record) =>
-                                {
-                                    recordExList.Add(new RecordEx(
-                                        recordObj: record,
-                                        fileLocation: filePathToRead));
-                                });
+                                delegateDeclaration: delegateDeclarationMember,
+                                codeLocation: codeLocation,
+                                setRecord: setRecord);
                         }
                         break;
 
                     // イベント・フィールド宣言
                     case SyntaxKind.EventFieldDeclaration:
                         {
-                            var eventFieldDeclaration = (EventFieldDeclarationSyntax)rootMember;
+                            var eventFieldDeclarationMember = (EventFieldDeclarationSyntax)memberDeclaration;
 
                             ParseEventField(
-                                eventFieldDeclaration: eventFieldDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty,
-                                setRecord: (record) =>
-                                {
-                                    recordExList.Add(new RecordEx(
-                                        recordObj: record,
-                                        fileLocation: filePathToRead));
-                                });
+                                eventFieldDeclaration: eventFieldDeclarationMember,
+                                codeLocation: codeLocation,
+                                setRecord: setRecord);
                         }
                         break;
 
                     // メソッドの宣言部なら
                     case SyntaxKind.MethodDeclaration:
                         {
-                            var methodDeclaration = (MethodDeclarationSyntax)rootMember;
+                            var methodDeclarationMember = (MethodDeclarationSyntax)memberDeclaration;
 
                             var record = ParseMethod(
-                                methodDeclaration: methodDeclaration,
-                                // トップ・レベルだから、ネームスペースは無い
-                                codeLocation: string.Empty);
+                                methodDeclaration: methodDeclarationMember,
+                                codeLocation: codeLocation);
 
-                            recordExList.Add(new RecordEx(
-                                recordObj: record,
-                                fileLocation: filePathToRead));
+                            setRecord(record);
+                        }
+                        break;
+
+                    // 不完全なメンバーなら
+                    case SyntaxKind.IncompleteMember:
+                        {
+                            var incompleteMember = (IncompleteMemberSyntax)memberDeclaration;
+
+                            var record = ParseIncompleteMember(
+                                incompleteMember: incompleteMember,
+                                codeLocation: codeLocation);
+
+                            setRecord(record);
                         }
                         break;
 
                     default:
                         {
-                            var message = $"[[What? 238]] rootMember.Kind(): {rootMember.Kind().ToString()}";
+                            var message = $"[[What? 238]] rootMember.Kind(): {memberDeclaration.Kind().ToString()}";
 
-                            recordExList.Add(new RecordEx(
-                                recordObj: new Record(
+                            setRecord(new Record(
                                     kind: "[[What?]]",
-                                    codeLocation: string.Empty,
+                                    codeLocation: codeLocation,
                                     access: string.Empty,
                                     memberType: string.Empty,
                                     name: string.Empty,
                                     value: string.Empty,
-                                    summary: message),
-                                fileLocation: filePathToRead));
+                                    summary: message));
+
                             Console.WriteLine(message);
                         }
                         break;
@@ -244,31 +219,45 @@
         /// <param name="namespaceDeclaration"></param>
         static void ParseNamespaceDeclaration(LazyCoding.SetValue<Record> setRecord, NamespaceDeclarationSyntax namespaceDeclaration)
         {
+            var codeLocation = namespaceDeclaration.Name.ToString();
+
             // クラスが２個定義されてるとか、列挙型が定義されてるとかに対応
             foreach (var memberDeclaration in namespaceDeclaration.Members)
             {
                 switch (memberDeclaration.Kind())
                 {
+                    // ネームスペース宣言
+                    case SyntaxKind.NamespaceDeclaration:
+                        {
+                            var namespaceDeclarationMember = (NamespaceDeclarationSyntax)memberDeclaration;
+
+                            ParseNamespaceDeclaration(
+                                setRecord: setRecord,
+                                namespaceDeclaration: namespaceDeclarationMember);
+
+                        }
+                        break;
+
                     // クラス宣言
                     case SyntaxKind.ClassDeclaration:
                         {
-                            var classDeclaration = (ClassDeclarationSyntax)memberDeclaration;
+                            var classDeclarationMember = (ClassDeclarationSyntax)memberDeclaration;
 
                             ParseClassDeclaration(
                                 setRecord: setRecord,
-                                codeLocation: namespaceDeclaration.Name.ToString(),
-                                classDeclaration: classDeclaration);
+                                codeLocation: codeLocation,
+                                classDeclaration: classDeclarationMember);
                         }
                         break;
 
                     // インターフェース宣言
                     case SyntaxKind.InterfaceDeclaration:
                         {
-                            var interfaceDeclaration = (InterfaceDeclarationSyntax)memberDeclaration;
+                            var interfaceDeclarationMember = (InterfaceDeclarationSyntax)memberDeclaration;
 
                             // TODO インターフェース宣言部
 
-                            foreach (var programDeclarationMember in interfaceDeclaration.Members)
+                            foreach (var programDeclarationMember in interfaceDeclarationMember.Members)
                             {
                                 switch (programDeclarationMember.Kind())
                                 {
@@ -279,7 +268,7 @@
 
                                             ParseField(
                                                 fieldDeclaration: fieldDeclaration,
-                                                codeLocation: namespaceDeclaration.Name.ToString(),
+                                                codeLocation: codeLocation,
                                                 setRecord: setRecord);
                                         }
                                         break;
@@ -294,11 +283,11 @@
                     // 構造体宣言
                     case SyntaxKind.StructDeclaration:
                         {
-                            var structDeclaration = (StructDeclarationSyntax)memberDeclaration;
+                            var structDeclarationMember = (StructDeclarationSyntax)memberDeclaration;
 
                             var record = ParseStruct(
-                                structDeclaration: structDeclaration,
-                                codeLocation: namespaceDeclaration.Name.ToString());
+                                structDeclaration: structDeclarationMember,
+                                codeLocation: codeLocation);
 
                             setRecord(record);
                         }
@@ -307,24 +296,24 @@
                     // 列挙型宣言
                     case SyntaxKind.EnumDeclaration:
                         {
-                            var enumDeclaration = (EnumDeclarationSyntax)memberDeclaration;
+                            var enumDeclarationMember = (EnumDeclarationSyntax)memberDeclaration;
 
                             ParseEnumDeclaration(
                                 setRecord: setRecord,
-                                codeLocation: namespaceDeclaration.Name.ToString(),
-                                enumDeclaration: enumDeclaration);
+                                codeLocation: codeLocation,
+                                enumDeclaration: enumDeclarationMember);
                         }
                         break;
 
                     // コンストラクター宣言
                     case SyntaxKind.ConstructorDeclaration:
                         {
-                            var constructorDeclaration = (ConstructorDeclarationSyntax)memberDeclaration;
+                            var constructorDeclarationMember = (ConstructorDeclarationSyntax)memberDeclaration;
 
                             var record = ParseConstructor(
-                                constructorDeclaration: constructorDeclaration,
+                                constructorDeclaration: constructorDeclarationMember,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: namespaceDeclaration.Name.ToString());
+                                codeLocation: codeLocation);
 
                             setRecord(record);
                         }
@@ -333,12 +322,12 @@
                     // デストラクター宣言
                     case SyntaxKind.DestructorDeclaration:
                         {
-                            var destructorDeclaration = (DestructorDeclarationSyntax)memberDeclaration;
+                            var destructorDeclarationMember = (DestructorDeclarationSyntax)memberDeclaration;
 
                             var record = ParseDestructor(
-                                destructorDeclaration: destructorDeclaration,
+                                destructorDeclaration: destructorDeclarationMember,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: namespaceDeclaration.Name.ToString());
+                                codeLocation: codeLocation);
 
                             setRecord(record);
                         }
@@ -347,12 +336,12 @@
                     // メソッドの宣言部なら
                     case SyntaxKind.MethodDeclaration:
                         {
-                            var methodDeclaration = (MethodDeclarationSyntax)memberDeclaration;
+                            var methodDeclarationMember = (MethodDeclarationSyntax)memberDeclaration;
 
                             var record = ParseMethod(
-                                methodDeclaration: methodDeclaration,
+                                methodDeclaration: methodDeclarationMember,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: namespaceDeclaration.Name.ToString());
+                                codeLocation: codeLocation);
 
                             setRecord(record);
                         }
@@ -361,26 +350,41 @@
                     // フィールドの宣言部なら
                     case SyntaxKind.FieldDeclaration:
                         {
-                            var fieldDeclaration = (FieldDeclarationSyntax)memberDeclaration;
+                            var fieldDeclarationMember = (FieldDeclarationSyntax)memberDeclaration;
 
                             ParseField(
-                                fieldDeclaration: fieldDeclaration,
+                                fieldDeclaration: fieldDeclarationMember,
                                 // ネームスペース.親クラス名　とつなげる
-                                codeLocation: namespaceDeclaration.Name.ToString(),
+                                codeLocation: codeLocation,
                                 setRecord: setRecord);
+                        }
+                        break;
+
+
+                    // 不完全なメンバーなら
+                    case SyntaxKind.IncompleteMember:
+                        {
+                            var incompleteMember = (IncompleteMemberSyntax)memberDeclaration;
+
+                            var record = ParseIncompleteMember(
+                                incompleteMember: incompleteMember,
+                                // ネームスペース.親クラス名　とつなげる
+                                codeLocation: codeLocation);
+
+                            setRecord(record);
                         }
                         break;
 
                     default:
                         {
-                            var message = $"[[What? 119]] memberDeclaration.Kind(): {memberDeclaration.Kind().ToString()}";
+                            var message = $"[[What? 392]] memberDeclaration.Kind(): {memberDeclaration.Kind().ToString()}";
 
                             setRecord(new Record(
                                     kind: "[[What?]]",
-                                    codeLocation: namespaceDeclaration.Name.ToString(),
+                                    codeLocation: codeLocation,
                                     access: string.Empty,
                                     memberType: string.Empty,
-                                    name: namespaceDeclaration.Name.ToString(),
+                                    name: string.Empty,
                                     value: string.Empty,
                                     summary: message));
 
@@ -520,6 +524,20 @@
                             var record = ParseMethod(
                                 methodDeclaration: methodDeclaration,
                                 codeLocation: codeLocation);
+                            setRecord(record);
+                        }
+                        break;
+
+                    // 不完全なメンバーなら
+                    case SyntaxKind.IncompleteMember:
+                        {
+                            var incompleteMember = (IncompleteMemberSyntax)memberDeclaration;
+
+                            var record = ParseIncompleteMember(
+                                incompleteMember: incompleteMember,
+                                // ネームスペース.親クラス名　とつなげる
+                                codeLocation: codeLocation);
+
                             setRecord(record);
                         }
                         break;
@@ -2200,6 +2218,162 @@
                 summary: summaryText);                                      // ドキュメント・コメントの summary
 
             // テスト用 summary: builder.ToString()
+        }
+
+        /// <summary>
+        /// 不完全メンバーの解析
+        /// </summary>
+        /// <param name="incompleteMember">不完全メンバー</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <returns>解析結果</returns>
+        static Record ParseIncompleteMember(IncompleteMemberSyntax incompleteMember, string codeLocation)
+        {
+            var builder = new StringBuilder();
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■AttributeLists:                {incompleteMember.AttributeLists}");
+            // ■AttributeLists:                
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsAnnotations:           {incompleteMember.ContainsAnnotations}");
+            // ■ContainsAnnotations:           False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsDiagnostics:           {incompleteMember.ContainsDiagnostics}");
+            // ■ContainsDiagnostics:           True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsDirectives:            {incompleteMember.ContainsDirectives}");
+            // ■ContainsDirectives:            False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ContainsSkippedText:           {incompleteMember.ContainsSkippedText}");
+            // ■ContainsSkippedText:           True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■FullSpan:                      {incompleteMember.FullSpan}");
+            // ■FullSpan:                      [7416..7443)
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■HasLeadingTrivia:              {incompleteMember.HasLeadingTrivia}");
+            // ■HasLeadingTrivia:              False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■HasStructuredTrivia:           {incompleteMember.HasStructuredTrivia}");
+            // ■HasStructuredTrivia:           True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■HasTrailingTrivia:             {incompleteMember.HasTrailingTrivia}");
+            // ■HasTrailingTrivia:             True
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■IsMissing:                     {incompleteMember.IsMissing}");
+            // ■IsMissing:                     False
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■IsStructuredTrivia:            {incompleteMember.IsStructuredTrivia}");
+            // ■IsStructuredTrivia:            False
+
+            //
+            // プログラミング言語の種類
+            //
+            builder.Append($" ■Language:                      {incompleteMember.Language}");
+            // ■Language:                      C#
+
+            //
+            // 修飾子
+            //
+            builder.Append($" ■Modifiers:                     {incompleteMember.Modifiers}");
+            // ■Modifiers:                     
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■Parent:                        {incompleteMember.Parent}");
+            //
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■ParentTrivia:                  {incompleteMember.ParentTrivia}");
+            // ■ParentTrivia:                  
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■RawKind:                       {incompleteMember.RawKind}");
+            // ■RawKind:                       8916
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■Span:                          {incompleteMember.Span}");
+            // ■Span:                          [1826..1829)
+
+            //
+            // なんだろう？
+            //
+            builder.Append($" ■SpanStart:                     {incompleteMember.SpanStart}");
+            // ■SpanStart:                     1826
+
+            //
+            // 出力長そう
+            //
+            // builder.Append($" ■SyntaxTree:                    {incompleteMember.SyntaxTree}");
+            //
+
+            //
+            // 型
+            //
+            builder.Append($" ■Type:                          {incompleteMember.Type}");
+            // ■Type:                          int
+
+            //
+            // 全文字列
+            //
+            builder.Append($" ■ToFullString():                {incompleteMember.ToFullString()}");
+            // 
+
+
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = incompleteMember.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            return new Record(
+                kind: "IncompleteMember",
+                codeLocation: codeLocation,                                 // コードのある場所
+                access: incompleteMember.Modifiers.ToString(),         // 修飾子
+                memberType: incompleteMember.Type.ToString(),                                   // 型
+                name: string.Empty,          // 関数名
+                value: string.Empty,                                        // 値は空  
+                                                                            // summary: summaryText);                                      // ドキュメント・コメントの summary
+
+            summary: builder.ToString());   // テスト用
         }
 
         /// <summary>
