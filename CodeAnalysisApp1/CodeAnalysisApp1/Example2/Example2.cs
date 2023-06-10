@@ -243,7 +243,7 @@
                         setRecord(new Record(
                             kind: "[[What?]]",
                             codeLocation: codeLocation,
-                            access: string.Empty,
+                            modifiers: string.Empty,
                             memberType: string.Empty,
                             name: string.Empty,
                             value: string.Empty,
@@ -295,7 +295,7 @@
             setRecord(new Record(
                 kind: "Class",
                 codeLocation: codeLocation,
-                access: classDeclaration.Modifiers.ToString(),          // 修飾子
+                modifiers: classDeclaration.Modifiers.ToString(),          // 修飾子
                 memberType: string.Empty,                               // 型は無し
                 name: classDeclaration.Identifier.ToString(),           // クラス名
                 value: string.Empty,                                    // 値は空  
@@ -337,7 +337,7 @@
             setRecord(new Record(
                 kind: "Interface",
                 codeLocation: codeLocation,
-                access: interfaceDeclaration.Modifiers.ToString(),      // 修飾子
+                modifiers: interfaceDeclaration.Modifiers.ToString(),      // 修飾子
                 memberType: string.Empty,                               // 戻り値の型
                 name: interfaceDeclaration.Identifier.ToString(),       // インターフェース名
                 value: string.Empty,                                    // 値は空  
@@ -555,7 +555,7 @@
             setRecord(new Record(
                 kind: "Struct",
                 codeLocation: codeLocation,
-                access: structDeclaration.Modifiers.ToString(),         // 修飾子
+                modifiers: structDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: string.Empty,                               // 戻り値の型
                 name: structDeclaration.Identifier.ToString(),          // 構造体名
                 value: string.Empty,                                    // 値は空  
@@ -597,7 +597,7 @@
             setRecord(new Record(
                 kind: "Enum",
                 codeLocation: codeLocation,
-                access: enumDeclaration.Modifiers.ToString(),           // 修飾子
+                modifiers: enumDeclaration.Modifiers.ToString(),           // 修飾子
                 memberType: string.Empty,                               // 戻り値の型
                 name: enumDeclaration.Identifier.ToString(),            // 構造体名
                 value: string.Empty,                                    // 値は空  
@@ -633,11 +633,6 @@
         /// <returns>解析結果</returns>
         static Record ParseEnumMember(EnumMemberDeclarationSyntax enumMemberDeclaration, string codeLocation)
         {
-            var modifiers = enumMemberDeclaration.Modifiers;
-            // Modifiers:           public
-
-            var identifierText = enumMemberDeclaration.Identifier.ToString();
-
             var leadingTrivia = enumMemberDeclaration.GetLeadingTrivia();
             //leadingTrivia:         /// <summary>
             //                       /// ?? 章Idの前に
@@ -672,9 +667,9 @@
             return new Record(
                 kind: "EnumMember",
                 codeLocation: codeLocation,
-                access: modifiers.ToString(),
+                modifiers: enumMemberDeclaration.Modifiers.ToString(),
                 memberType: string.Empty,
-                name: identifierText,
+                name: enumMemberDeclaration.Identifier.ToString(),
                 value: enumValue,
                 summary: summaryText);
         }
@@ -1187,7 +1182,7 @@
                 setRecord(new Record(
                     kind: "Field",
                     codeLocation: codeLocation,
-                    access: fieldDeclaration.Modifiers.ToString(),
+                    modifiers: fieldDeclaration.Modifiers.ToString(),
                     memberType: fieldDeclaration.Declaration.Type.ToString(),
                     name: variable.Identifier.ToString(),
                     value: initializerText,
@@ -1381,7 +1376,7 @@
             setRecord(new Record(
                 kind: "Delegate",                                           // 種類
                 codeLocation: codeLocation,                                 // コードのある場所
-                access: delegateDeclaration.Modifiers.ToString(),           // 修飾子
+                modifiers: delegateDeclaration.Modifiers.ToString(),           // 修飾子
                 memberType: delegateDeclaration.ReturnType.ToString(),      // 戻り値の型
                 name: delegateDeclaration.Identifier.ToString(),            // デリゲート名
                 value: string.Empty,                                        // 値は無し
@@ -1667,7 +1662,7 @@
                 setRecord(new Record(
                     kind: "EventField",                                                 // 種類
                     codeLocation: codeLocation,                                         // コードのある場所
-                    access: eventFieldDeclaration.Modifiers.ToString(),                 // 修飾子
+                    modifiers: eventFieldDeclaration.Modifiers.ToString(),                 // 修飾子
                     memberType: eventFieldDeclaration.Declaration.Type.ToString(),      // 戻り値の型
                     name: variable.Identifier.ToString(),                               // デリゲート名
                     value: string.Empty,                                                // 値は無し
@@ -1875,7 +1870,7 @@
             return new Record(
                 kind: "Property",
                 codeLocation: codeLocation,
-                access: propertyDeclaration.Modifiers.ToString(),
+                modifiers: propertyDeclaration.Modifiers.ToString(),
                 memberType: propertyDeclaration.Type.ToString(),
                 name: propertyDeclaration.Identifier.ToString(),
                 value: value,
@@ -2051,7 +2046,7 @@
             return new Record(
                 kind: "Constructor",
                 codeLocation: codeLocation,                                   // コードのある場所
-                access: constructorDeclaration.Modifiers.ToString(),        // 修飾子
+                modifiers: constructorDeclaration.Modifiers.ToString(),        // 修飾子
                 memberType: string.Empty,                                   // 戻り値の型は無い
                 name: constructorDeclaration.Identifier.ToString(),         // 関数名
                 value: string.Empty,                                        // 値は空  
@@ -2082,7 +2077,7 @@
             return new Record(
                 kind: "Destructor",
                 codeLocation: codeLocation,                                 // コードのある場所
-                access: destructorDeclaration.Modifiers.ToString(),         // 修飾子
+                modifiers: destructorDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: string.Empty,                                   // 戻り値の型は無い
                 name: destructorDeclaration.Identifier.ToString(),          // 関数名
                 value: string.Empty,                                        // 値は空  
@@ -2230,7 +2225,7 @@
             return new Record(
                 kind: "IncompleteMember",
                 codeLocation: codeLocation,                                         // コードのある場所
-                access: incompleteMember.Modifiers.ToString(),                      // 修飾子
+                modifiers: incompleteMember.Modifiers.ToString(),                      // 修飾子
                 memberType: incompleteMember.Type.ToString(),                       // 型
                 name: string.Empty,                                                 // 名前は取れない
                 value: string.Empty,                                                // 値は空  
@@ -2456,7 +2451,7 @@
             return new Record(
                 kind: "Method",
                 codeLocation: codeLocation,
-                access: methodDeclaration.Modifiers.ToString(),         // 修飾子
+                modifiers: methodDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: methodDeclaration.ReturnType.ToString(),    // 戻り値の型
                 name: methodDeclaration.Identifier.ToString(),          // 関数名
                 value: string.Empty,                                    // 値は空  

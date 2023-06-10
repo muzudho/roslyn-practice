@@ -11,18 +11,18 @@
         /// <summary>
         /// 生成
         /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="codeLocation"></param>
-        /// <param name="access"></param>
-        /// <param name="memberType"></param>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <param name="summary"></param>
-        internal Record(string kind, string codeLocation, string access, string memberType, string name, string value, string summary)
+        /// <param name="kind">種類</param>
+        /// <param name="codeLocation">コードのある場所</param>
+        /// <param name="modifiers">修飾子</param>
+        /// <param name="memberType">メンバー型</param>
+        /// <param name="name">名前</param>
+        /// <param name="value">値</param>
+        /// <param name="summary">ドキュメント・コメントの概要</param>
+        internal Record(string kind, string codeLocation, string modifiers, string memberType, string name, string value, string summary)
         {
             Kind = kind;
             CodeLocation = codeLocation;
-            Access = access;
+            Modifiers = modifiers;
             MemberType = memberType;
             Name = name;
             Value = value;
@@ -30,7 +30,7 @@
         }
 
         /// <summary>
-        /// これの種類
+        /// 種類
         /// </summary>
         internal string Kind { get; }
 
@@ -39,19 +39,42 @@
         /// </summary>
         internal string CodeLocation { get; }
 
-        internal string Access { get; }
+        /// <summary>
+        /// 修飾子
+        /// </summary>
+        internal string Modifiers { get; }
+
+        /// <summary>
+        /// メンバー型
+        /// </summary>
         internal string MemberType { get; }
+
+        /// <summary>
+        /// 名前
+        /// </summary>
         internal string Name { get; }
+
+        /// <summary>
+        /// 値
+        /// </summary>
         internal string Value { get; }
+
+        /// <summary>
+        /// ドキュメント・コメントの概要
+        /// </summary>
         internal string Summary { get; }
 
+        /// <summary>
+        /// CSV出力のためのテキスト作成
+        /// </summary>
+        /// <returns>CSV形式テキスト</returns>
         internal string ToCSV()
         {
             var list = new List<string>()
                 {                    
                     CodeLocation,
                     Kind,
-                    Access,
+                    Modifiers,
                     MemberType,
                     Name,
                     Value,
@@ -64,6 +87,11 @@
             return string.Join(",", list);
         }
 
+        /// <summary>
+        /// CSVエスケープ
+        /// </summary>
+        /// <param name="row">各列のデータ</param>
+        /// <returns>変換後の各列のデータ</returns>
         internal static List<string> EscapeCSV(List<string> row)
         {
             var escapedValues = new List<string>();
@@ -85,8 +113,19 @@
             return escapedValues;
         }
 
+        /// <summary>
+        /// "=" で始まる
+        /// </summary>
         static Regex RegexStartEquals = new Regex(@"^\s*=", RegexOptions.Multiline);
+
+        /// <summary>
+        /// `"=` で始まる
+        /// </summary>
         static Regex RegexStartDquotEquals = new Regex(@"^\s*""\s*=", RegexOptions.Multiline);
+
+        /// <summary>
+        /// 両端のダブルクォーテーションで囲まれた内側
+        /// </summary>
         static Regex RegexRemoveDquot = new Regex(@"^\s*""(.*)""\s*$", RegexOptions.Singleline);
 
         /// <summary>
@@ -95,13 +134,13 @@
         /// - EscapeCSV を先に行っておく必要がある
         /// - Excel とは互換性が無くなる
         /// </summary>
-        /// <param name="values"></param>
-        /// <returns></returns>
-        internal static List<string> EscapeForGoogleSpreadSheet(List<string> values)
+        /// <param name="row">各列のデータ</param>
+        /// <returns>変換後の各列のデータ</returns>
+        internal static List<string> EscapeForGoogleSpreadSheet(List<string> row)
         {
             var escapedValues = new List<string>();
 
-            foreach (var value in values)
+            foreach (var value in row)
             {
                 string escapedValue;
 
