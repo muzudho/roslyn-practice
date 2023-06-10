@@ -135,7 +135,7 @@
                         //
                         var enumMemberDeclarationMember = (EnumMemberDeclarationSyntax)memberDeclaration;
 
-                        var record = ParseEnum(enumMemberDeclarationMember, codeLocation);
+                        var record = ParseEnumMember(enumMemberDeclarationMember, codeLocation);
                         setRecord(record);
                     }
                     break;
@@ -293,7 +293,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             setRecord(new Record(
-                kind: "Classt",
+                kind: "Class",
                 codeLocation: codeLocation,
                 access: classDeclaration.Modifiers.ToString(),          // 修飾子
                 memberType: string.Empty,                               // 型は無し
@@ -363,7 +363,7 @@
         }
 
         /// <summary>
-        /// 構造体解析
+        /// 構造体宣言を解析
         /// </summary>
         /// <param name="structDeclaration">構造体宣言</param>
         /// <param name="codeLocation">コードのある場所</param>
@@ -595,7 +595,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             setRecord(new Record(
-                kind: "Struct",
+                kind: "Enum",
                 codeLocation: codeLocation,
                 access: enumDeclaration.Modifiers.ToString(),           // 修飾子
                 memberType: string.Empty,                               // 戻り値の型
@@ -623,9 +623,64 @@
         }
 
         /// <summary>
-        /// class, interface のフィールド用
+        /// 列挙型メンバー宣言を解析
         /// 
-        /// - プロパティにもヒットする
+        /// 📖 [Roslyn CodeAnalysisでenumの値を取得したい](https://teratail.com/questions/290108?sort=1)
+        /// Enum 値は、静的には、取れないようだ？
+        /// `= 値` が書かれているかどうかは取得できるようだ？
+        /// </summary>
+        /// <param name="enumMemberDeclaration">列挙型メンバー宣言</param>
+        /// <returns>解析結果</returns>
+        static Record ParseEnumMember(EnumMemberDeclarationSyntax enumMemberDeclaration, string codeLocation)
+        {
+            var modifiers = enumMemberDeclaration.Modifiers;
+            // Modifiers:           public
+
+            var identifierText = enumMemberDeclaration.Identifier.ToString();
+
+            var leadingTrivia = enumMemberDeclaration.GetLeadingTrivia();
+            //leadingTrivia:         /// <summary>
+            //                       /// ?? 章Idの前に
+            //                       /// </summary>
+
+            string enumValue;
+            if (enumMemberDeclaration.EqualsValue != null)
+            {
+                var equalsValueText = enumMemberDeclaration.EqualsValue.ToString();
+                var match = Regex.Match(equalsValueText, @"=\s*(.*)");
+                if (match.Success)
+                {
+                    enumValue = match.Groups[1].ToString();
+                }
+                else
+                {
+                    enumValue = equalsValueText;
+                }
+            }
+            else
+            {
+                enumValue = string.Empty;
+            }
+
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            return new Record(
+                kind: "EnumMember",
+                codeLocation: codeLocation,
+                access: modifiers.ToString(),
+                memberType: string.Empty,
+                name: identifierText,
+                value: enumValue,
+                summary: summaryText);
+        }
+
+        /// <summary>
+        /// フィールド宣言を解析
         /// </summary>
         /// <param name="fieldDeclaration"></param>
         /// <returns></returns>
@@ -1345,7 +1400,7 @@
             string codeLocation,
             LazyCoding.SetValue<Record> setRecord)
         {
-            var builder = new StringBuilder();
+            // var builder = new StringBuilder();
 
             //
             // アノテーション
@@ -1388,97 +1443,97 @@
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.ContainsAnnotations:     {eventFieldDeclaration.Declaration.ContainsAnnotations}");
+                // builder.Append($" ■Declaration.ContainsAnnotations:     {eventFieldDeclaration.Declaration.ContainsAnnotations}");
                 // ■Declaration.ContainsAnnotations:     False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.ContainsDiagnostics:     {eventFieldDeclaration.Declaration.ContainsDiagnostics}");
+                // builder.Append($" ■Declaration.ContainsDiagnostics:     {eventFieldDeclaration.Declaration.ContainsDiagnostics}");
                 // ■Declaration.ContainsDiagnostics:     False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.ContainsDirectives:      {eventFieldDeclaration.Declaration.ContainsDirectives}");
+                // builder.Append($" ■Declaration.ContainsDirectives:      {eventFieldDeclaration.Declaration.ContainsDirectives}");
                 // ■Declaration.ContainsDirectives:      False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.ContainsSkippedText:     {eventFieldDeclaration.Declaration.ContainsSkippedText}");
+                // builder.Append($" ■Declaration.ContainsSkippedText:     {eventFieldDeclaration.Declaration.ContainsSkippedText}");
                 // ■Declaration.ContainsSkippedText:     False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.FullSpan:                {eventFieldDeclaration.Declaration.FullSpan}");
+                // builder.Append($" ■Declaration.FullSpan:                {eventFieldDeclaration.Declaration.FullSpan}");
                 // ■Declaration.FullSpan:                [732..764)
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.HasLeadingTrivia:        {eventFieldDeclaration.Declaration.HasLeadingTrivia}");
+                // builder.Append($" ■Declaration.HasLeadingTrivia:        {eventFieldDeclaration.Declaration.HasLeadingTrivia}");
                 // ■Declaration.HasLeadingTrivia:        False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.HasStructuredTrivia:     {eventFieldDeclaration.Declaration.HasStructuredTrivia}");
+                // builder.Append($" ■Declaration.HasStructuredTrivia:     {eventFieldDeclaration.Declaration.HasStructuredTrivia}");
                 // ■Declaration.HasStructuredTrivia:     False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.HasTrailingTrivia:       {eventFieldDeclaration.Declaration.HasTrailingTrivia}");
+                // builder.Append($" ■Declaration.HasTrailingTrivia:       {eventFieldDeclaration.Declaration.HasTrailingTrivia}");
                 // ■Declaration.HasTrailingTrivia:       False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.IsMissing:               {eventFieldDeclaration.Declaration.IsMissing}");
+                // builder.Append($" ■Declaration.IsMissing:               {eventFieldDeclaration.Declaration.IsMissing}");
                 // ■Declaration.IsMissing:               False
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.IsStructuredTrivia:      {eventFieldDeclaration.Declaration.IsStructuredTrivia}");
+                // builder.Append($" ■Declaration.IsStructuredTrivia:      {eventFieldDeclaration.Declaration.IsStructuredTrivia}");
                 // ■Declaration.IsStructuredTrivia:      False
 
                 //
                 // プログラミング言語の種類
                 //
-                builder.Append($" ■Declaration.Language:                {eventFieldDeclaration.Declaration.Language}");
+                // builder.Append($" ■Declaration.Language:                {eventFieldDeclaration.Declaration.Language}");
                 // ■Declaration.Language:                C#
 
                 //
                 // 自身を含む全体の文字列
                 //
-                builder.Append($" ■Declaration.Parent:                  {eventFieldDeclaration.Declaration.Parent}");
+                // builder.Append($" ■Declaration.Parent:                  {eventFieldDeclaration.Declaration.Parent}");
                 // ■Declaration.Parent:                  public static event Action<string> ScenePlayEndEvent;
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.ParentTrivia:            {eventFieldDeclaration.Declaration.ParentTrivia}");
+                // builder.Append($" ■Declaration.ParentTrivia:            {eventFieldDeclaration.Declaration.ParentTrivia}");
                 // ■Declaration.ParentTrivia:            
 
                 //
                 // なんだろう？
                 //
-                builder.Append($" ■Declaration.RawKind:                 {eventFieldDeclaration.Declaration.RawKind}");
+                // builder.Append($" ■Declaration.RawKind:                 {eventFieldDeclaration.Declaration.RawKind}");
                 // ■Declaration.RawKind:                 8794
 
                 //
                 // 開始文字位置、終了文字位置か？
                 //
-                builder.Append($" ■Declaration.Span:                    {eventFieldDeclaration.Declaration.Span}");
+                // builder.Append($" ■Declaration.Span:                    {eventFieldDeclaration.Declaration.Span}");
                 // ■Declaration.Span:                    [732..764)
 
                 //
                 // 開始文字位置か？
                 //
-                builder.Append($" ■Declaration.SpanStart:               {eventFieldDeclaration.Declaration.SpanStart}");
+                // builder.Append($" ■Declaration.SpanStart:               {eventFieldDeclaration.Declaration.SpanStart}");
                 // ■Declaration.SpanStart:               732
 
                 //
@@ -1490,13 +1545,13 @@
                 //
                 // 型
                 //
-                builder.Append($" ■Declaration.Type:                    {eventFieldDeclaration.Declaration.Type}");
+                // builder.Append($" ■Declaration.Type:                    {eventFieldDeclaration.Declaration.Type}");
                 // ■Declaration.Type:                    Action<string>
 
                 //
                 // 変数のリスト
                 //
-                builder.Append($" ■Declaration.Variables:               {eventFieldDeclaration.Declaration.Variables}");
+                // builder.Append($" ■Declaration.Variables:               {eventFieldDeclaration.Declaration.Variables}");
                 // ■Declaration.Variables:               ScenePlayEndEvent
             }
 
@@ -2025,7 +2080,7 @@
             string summaryText = ParseDocumentComment(documentCommentText);
 
             return new Record(
-                kind: "Constructor",
+                kind: "Destructor",
                 codeLocation: codeLocation,                                 // コードのある場所
                 access: destructorDeclaration.Modifiers.ToString(),         // 修飾子
                 memberType: string.Empty,                                   // 戻り値の型は無い
@@ -2044,84 +2099,84 @@
         /// <returns>解析結果</returns>
         static Record ParseIncompleteMember(IncompleteMemberSyntax incompleteMember, string codeLocation)
         {
-            var builder = new StringBuilder();
+            // var builder = new StringBuilder();
 
             //
             // なんだろう？
             //
-            builder.Append($" ■AttributeLists:                {incompleteMember.AttributeLists}");
+            // builder.Append($" ■AttributeLists:                {incompleteMember.AttributeLists}");
             // ■AttributeLists:                
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsAnnotations:           {incompleteMember.ContainsAnnotations}");
+            // builder.Append($" ■ContainsAnnotations:           {incompleteMember.ContainsAnnotations}");
             // ■ContainsAnnotations:           False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsDiagnostics:           {incompleteMember.ContainsDiagnostics}");
+            // builder.Append($" ■ContainsDiagnostics:           {incompleteMember.ContainsDiagnostics}");
             // ■ContainsDiagnostics:           True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsDirectives:            {incompleteMember.ContainsDirectives}");
+            // builder.Append($" ■ContainsDirectives:            {incompleteMember.ContainsDirectives}");
             // ■ContainsDirectives:            False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■ContainsSkippedText:           {incompleteMember.ContainsSkippedText}");
+            // builder.Append($" ■ContainsSkippedText:           {incompleteMember.ContainsSkippedText}");
             // ■ContainsSkippedText:           True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■FullSpan:                      {incompleteMember.FullSpan}");
+            // builder.Append($" ■FullSpan:                      {incompleteMember.FullSpan}");
             // ■FullSpan:                      [7416..7443)
 
             //
             // なんだろう？
             //
-            builder.Append($" ■HasLeadingTrivia:              {incompleteMember.HasLeadingTrivia}");
+            // builder.Append($" ■HasLeadingTrivia:              {incompleteMember.HasLeadingTrivia}");
             // ■HasLeadingTrivia:              False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■HasStructuredTrivia:           {incompleteMember.HasStructuredTrivia}");
+            // builder.Append($" ■HasStructuredTrivia:           {incompleteMember.HasStructuredTrivia}");
             // ■HasStructuredTrivia:           True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■HasTrailingTrivia:             {incompleteMember.HasTrailingTrivia}");
+            // builder.Append($" ■HasTrailingTrivia:             {incompleteMember.HasTrailingTrivia}");
             // ■HasTrailingTrivia:             True
 
             //
             // なんだろう？
             //
-            builder.Append($" ■IsMissing:                     {incompleteMember.IsMissing}");
+            // builder.Append($" ■IsMissing:                     {incompleteMember.IsMissing}");
             // ■IsMissing:                     False
 
             //
             // なんだろう？
             //
-            builder.Append($" ■IsStructuredTrivia:            {incompleteMember.IsStructuredTrivia}");
+            // builder.Append($" ■IsStructuredTrivia:            {incompleteMember.IsStructuredTrivia}");
             // ■IsStructuredTrivia:            False
 
             //
             // プログラミング言語の種類
             //
-            builder.Append($" ■Language:                      {incompleteMember.Language}");
+            // builder.Append($" ■Language:                      {incompleteMember.Language}");
             // ■Language:                      C#
 
             //
             // 修飾子
             //
-            builder.Append($" ■Modifiers:                     {incompleteMember.Modifiers}");
+            // builder.Append($" ■Modifiers:                     {incompleteMember.Modifiers}");
             // ■Modifiers:                     
 
             //
@@ -2133,25 +2188,25 @@
             //
             // なんだろう？
             //
-            builder.Append($" ■ParentTrivia:                  {incompleteMember.ParentTrivia}");
+            // builder.Append($" ■ParentTrivia:                  {incompleteMember.ParentTrivia}");
             // ■ParentTrivia:                  
 
             //
             // なんだろう？
             //
-            builder.Append($" ■RawKind:                       {incompleteMember.RawKind}");
+            // builder.Append($" ■RawKind:                       {incompleteMember.RawKind}");
             // ■RawKind:                       8916
 
             //
             // なんだろう？
             //
-            builder.Append($" ■Span:                          {incompleteMember.Span}");
+            // builder.Append($" ■Span:                          {incompleteMember.Span}");
             // ■Span:                          [1826..1829)
 
             //
             // なんだろう？
             //
-            builder.Append($" ■SpanStart:                     {incompleteMember.SpanStart}");
+            // builder.Append($" ■SpanStart:                     {incompleteMember.SpanStart}");
             // ■SpanStart:                     1826
 
             //
@@ -2163,33 +2218,25 @@
             //
             // 型
             //
-            builder.Append($" ■Type:                          {incompleteMember.Type}");
+            // builder.Append($" ■Type:                          {incompleteMember.Type}");
             // ■Type:                          int
 
             //
             // 全文字列
             //
-            builder.Append($" ■ToFullString():                {incompleteMember.ToFullString()}");
+            // builder.Append($" ■ToFullString():                {incompleteMember.ToFullString()}");
             // 
-
-
-            // ドキュメント・コメント
-            // ======================
-            //
-            var leadingTrivia = incompleteMember.GetLeadingTrivia();
-            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
-            string summaryText = ParseDocumentComment(documentCommentText);
-
+           
             return new Record(
                 kind: "IncompleteMember",
-                codeLocation: codeLocation,                                 // コードのある場所
-                access: incompleteMember.Modifiers.ToString(),         // 修飾子
-                memberType: incompleteMember.Type.ToString(),                                   // 型
-                name: string.Empty,          // 関数名
-                value: string.Empty,                                        // 値は空  
-                                                                            // summary: summaryText);                                      // ドキュメント・コメントの summary
+                codeLocation: codeLocation,                                         // コードのある場所
+                access: incompleteMember.Modifiers.ToString(),                      // 修飾子
+                memberType: incompleteMember.Type.ToString(),                       // 型
+                name: string.Empty,                                                 // 名前は取れない
+                value: string.Empty,                                                // 値は空  
+                summary: "[[Don't worry about the error message. Not exactly]]");   // エラーではなく、パーサーの出来が悪い。「エラーメッセージは気にしないでください。正確ではありません」
 
-            summary: builder.ToString());   // テスト用
+            //summary: builder.ToString());   // テスト用
         }
 
         /// <summary>
@@ -2416,67 +2463,6 @@
                 summary: summaryText);                                  // ドキュメント・コメントの summary
 
             // テスト用 summary: builder.ToString()
-        }
-
-        /// <summary>
-        /// enum 型のメンバー用
-        /// </summary>
-        /// <param name="enumMemberDeclaration"></param>
-        /// <returns></returns>
-        static Record ParseEnum(EnumMemberDeclarationSyntax enumMemberDeclaration, string codeLocation)
-        {
-            var modifiers = enumMemberDeclaration.Modifiers;
-            // Modifiers:           public
-
-            var identifierText = enumMemberDeclaration.Identifier.ToString();
-
-            var leadingTrivia = enumMemberDeclaration.GetLeadingTrivia();
-            //leadingTrivia:         /// <summary>
-            //                       /// ?? 章Idの前に
-            //                       /// </summary>
-
-            //
-            // Enum 値
-            //
-            // 📖 [Roslyn CodeAnalysisでenumの値を取得したい](https://teratail.com/questions/290108?sort=1)
-            // 静的には、取れないようだ？
-            //
-            // `= 値` が書かれているかどうかは取得できるようだ？
-            //
-            string enumValue;
-            if (enumMemberDeclaration.EqualsValue != null)
-            {
-                var equalsValueText = enumMemberDeclaration.EqualsValue.ToString();
-                var match = Regex.Match(equalsValueText, @"=\s*(.*)");
-                if (match.Success)
-                {
-                    enumValue = match.Groups[1].ToString();
-                }
-                else
-                {
-                    enumValue = equalsValueText;
-                }
-            }
-            else
-            {
-                enumValue = string.Empty;
-            }
-
-            //
-            // ドキュメント・コメント
-            // ======================
-            //
-            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
-            string summaryText = ParseDocumentComment(documentCommentText);
-
-            return new Record(
-                kind: "EnumMember",
-                codeLocation: codeLocation,
-                access: modifiers.ToString(),
-                memberType: string.Empty,
-                name: identifierText,
-                value: enumValue,
-                summary: summaryText);
         }
 
         /// <summary>
