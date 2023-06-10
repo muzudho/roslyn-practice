@@ -96,28 +96,10 @@
                     {
                         var interfaceDeclarationMember = (InterfaceDeclarationSyntax)memberDeclaration;
 
-                        // TODO インターフェース宣言部
-
-                        foreach (var programDeclarationMember in interfaceDeclarationMember.Members)
-                        {
-                            switch (programDeclarationMember.Kind())
-                            {
-                                // フィールドの宣言部なら
-                                case SyntaxKind.FieldDeclaration:
-                                    {
-                                        var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-
-                                        ParseField(
-                                            fieldDeclaration: fieldDeclaration,
-                                            codeLocation: codeLocation,
-                                            setRecord: setRecord);
-                                    }
-                                    break;
-
-                                default:
-                                    break;
-                            }
-                        }
+                        ParseInterfaceDeclaration(
+                            setRecord: setRecord,
+                            codeLocation: codeLocation,
+                            interfaceDeclaration: interfaceDeclarationMember);
                     }
                     break;
 
@@ -294,7 +276,7 @@
         }
 
         /// <summary>
-        /// class 宣言を解析
+        /// クラス宣言を解析
         /// </summary>
         static void ParseClassDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, ClassDeclarationSyntax classDeclaration)
         {
@@ -335,6 +317,47 @@
                 ParseMember(
                     setRecord: setRecord,
                     memberDeclaration: memberDeclaration,
+                    codeLocation: codeLocation);
+            }
+        }
+
+        /// <summary>
+        /// インターフェース宣言を解析
+        /// </summary>
+        static void ParseInterfaceDeclaration(LazyCoding.SetValue<Record> setRecord, string codeLocation, InterfaceDeclarationSyntax interfaceDeclaration)
+        {
+            //
+            // ドキュメント・コメント
+            // ======================
+            //
+            var leadingTrivia = interfaceDeclaration.GetLeadingTrivia();
+            var documentCommentText = ChangeLeadingTriviaToDocumentCommentXMLText(leadingTrivia);
+            string summaryText = ParseDocumentComment(documentCommentText);
+
+            setRecord(new Record(
+                kind: "Interface",
+                codeLocation: codeLocation,
+                access: interfaceDeclaration.Modifiers.ToString(),      // 修飾子
+                memberType: string.Empty,                               // 戻り値の型
+                name: interfaceDeclaration.Identifier.ToString(),       // インターフェース名
+                value: string.Empty,                                    // 値は空  
+                summary: summaryText));                                 // ドキュメント・コメントの summary
+
+            // summary: builder.ToString()));       // テスト用
+
+            //
+            // メンバー解析
+            // ============
+            //
+
+            // ネームスペース.列挙型名　とつなげる
+            codeLocation = $"{codeLocation}.{interfaceDeclaration.Identifier.ToString()}";
+
+            foreach (var programDeclarationMember in interfaceDeclaration.Members)
+            {
+                ParseMember(
+                    setRecord: setRecord,
+                    memberDeclaration: programDeclarationMember,
                     codeLocation: codeLocation);
             }
         }
