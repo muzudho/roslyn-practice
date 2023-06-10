@@ -47,169 +47,210 @@
 
             foreach (var memberDeclaration in root.Members)
             {
-                switch (memberDeclaration.Kind())
-                {
-                    // ネームスペース宣言
-                    case SyntaxKind.NamespaceDeclaration:
-                        {
-                            var namespaceDeclarationMember = (NamespaceDeclarationSyntax)memberDeclaration;
-
-                            ParseNamespaceDeclaration(
-                                setRecord: setRecord,
-                                namespaceDeclaration: namespaceDeclarationMember);
-
-                        }
-                        break;
-
-                    // クラス宣言
-                    case SyntaxKind.ClassDeclaration:
-                        {
-                            var classDeclarationMember = (ClassDeclarationSyntax)memberDeclaration;
-
-                            ParseClassDeclaration(
-                                setRecord: setRecord,
-                                codeLocation: codeLocation,
-                                classDeclaration: classDeclarationMember);
-                        }
-                        break;
-
-                    // TODO インターフェース宣言部
-
-                    // 構造体宣言
-                    case SyntaxKind.StructDeclaration:
-                        {
-                            var structDeclarationMember = (StructDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseStruct(
-                                structDeclaration: structDeclarationMember,
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // 列挙型宣言
-                    case SyntaxKind.EnumDeclaration:
-                        {
-                            var enumsDeclarationMember = (EnumDeclarationSyntax)memberDeclaration;
-
-                            ParseEnumDeclaration(
-                                setRecord: setRecord,
-                                codeLocation: codeLocation,
-                                enumDeclaration: enumsDeclarationMember);
-                        }
-                        break;
-
-                    // コンストラクター宣言
-                    case SyntaxKind.ConstructorDeclaration:
-                        {
-                            var constructorDeclarationMember = (ConstructorDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseConstructor(
-                                constructorDeclaration: constructorDeclarationMember,
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // デストラクター宣言
-                    case SyntaxKind.DestructorDeclaration:
-                        {
-                            var destructorDeclarationMember = (DestructorDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseDestructor(
-                                destructorDeclaration: destructorDeclarationMember,
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // フィールドの宣言部なら
-                    case SyntaxKind.FieldDeclaration:
-                        {
-                            var fieldDeclarationMember = (FieldDeclarationSyntax)memberDeclaration;
-
-                            ParseField(
-                                fieldDeclaration: fieldDeclarationMember,
-                                codeLocation: codeLocation,
-                                setRecord: setRecord);
-                        }
-                        break;
-
-                    // デリゲートの宣言部なら
-                    case SyntaxKind.DelegateDeclaration:
-                        {
-                            var delegateDeclarationMember = (DelegateDeclarationSyntax)memberDeclaration;
-
-                            ParseDelegate(
-                                delegateDeclaration: delegateDeclarationMember,
-                                codeLocation: codeLocation,
-                                setRecord: setRecord);
-                        }
-                        break;
-
-                    // イベント・フィールド宣言
-                    case SyntaxKind.EventFieldDeclaration:
-                        {
-                            var eventFieldDeclarationMember = (EventFieldDeclarationSyntax)memberDeclaration;
-
-                            ParseEventField(
-                                eventFieldDeclaration: eventFieldDeclarationMember,
-                                codeLocation: codeLocation,
-                                setRecord: setRecord);
-                        }
-                        break;
-
-                    // メソッドの宣言部なら
-                    case SyntaxKind.MethodDeclaration:
-                        {
-                            var methodDeclarationMember = (MethodDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseMethod(
-                                methodDeclaration: methodDeclarationMember,
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // 不完全なメンバーなら
-                    case SyntaxKind.IncompleteMember:
-                        {
-                            var incompleteMember = (IncompleteMemberSyntax)memberDeclaration;
-
-                            var record = ParseIncompleteMember(
-                                incompleteMember: incompleteMember,
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    default:
-                        {
-                            var message = $"[[What? 238]] rootMember.Kind(): {memberDeclaration.Kind().ToString()}";
-
-                            setRecord(new Record(
-                                    kind: "[[What?]]",
-                                    codeLocation: codeLocation,
-                                    access: string.Empty,
-                                    memberType: string.Empty,
-                                    name: string.Empty,
-                                    value: string.Empty,
-                                    summary: message));
-
-                            Console.WriteLine(message);
-                        }
-                        break;
-
-                }
-
+                // メンバーを解析
+                ParseMember(
+                    setRecord: setRecord,
+                    memberDeclaration: memberDeclaration,
+                    codeLocation: codeLocation);
             }
 
             setRecordExList(recordExList);
+        }
+
+        /// <summary>
+        /// メンバーを解析
+        /// </summary>
+        static void ParseMember(
+            LazyCoding.SetValue<Record> setRecord,
+            MemberDeclarationSyntax memberDeclaration,
+            string codeLocation)
+        {
+            switch (memberDeclaration.Kind())
+            {
+                // ネームスペース宣言
+                case SyntaxKind.NamespaceDeclaration:
+                    {
+                        var namespaceDeclarationMember = (NamespaceDeclarationSyntax)memberDeclaration;
+
+                        ParseNamespaceDeclaration(
+                            setRecord: setRecord,
+                            namespaceDeclaration: namespaceDeclarationMember);
+
+                    }
+                    break;
+
+                // クラス宣言
+                case SyntaxKind.ClassDeclaration:
+                    {
+                        var classDeclarationMember = (ClassDeclarationSyntax)memberDeclaration;
+
+                        ParseClassDeclaration(
+                            setRecord: setRecord,
+                            codeLocation: codeLocation,
+                            classDeclaration: classDeclarationMember);
+                    }
+                    break;
+
+                // インターフェース宣言
+                case SyntaxKind.InterfaceDeclaration:
+                    {
+                        var interfaceDeclarationMember = (InterfaceDeclarationSyntax)memberDeclaration;
+
+                        // TODO インターフェース宣言部
+
+                        foreach (var programDeclarationMember in interfaceDeclarationMember.Members)
+                        {
+                            switch (programDeclarationMember.Kind())
+                            {
+                                // フィールドの宣言部なら
+                                case SyntaxKind.FieldDeclaration:
+                                    {
+                                        var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
+
+                                        ParseField(
+                                            fieldDeclaration: fieldDeclaration,
+                                            codeLocation: codeLocation,
+                                            setRecord: setRecord);
+                                    }
+                                    break;
+
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+
+                // 構造体宣言
+                case SyntaxKind.StructDeclaration:
+                    {
+                        var structDeclarationMember = (StructDeclarationSyntax)memberDeclaration;
+
+                        var record = ParseStruct(
+                            structDeclaration: structDeclarationMember,
+                            codeLocation: codeLocation);
+
+                        setRecord(record);
+                    }
+                    break;
+
+                // 列挙型宣言
+                case SyntaxKind.EnumDeclaration:
+                    {
+                        var enumDeclarationMember = (EnumDeclarationSyntax)memberDeclaration;
+
+                        ParseEnumDeclaration(
+                            setRecord: setRecord,
+                            codeLocation: codeLocation,
+                            enumDeclaration: enumDeclarationMember);
+                    }
+                    break;
+
+                // フィールドの宣言部なら
+                case SyntaxKind.FieldDeclaration:
+                    {
+                        var fieldDeclarationMember = (FieldDeclarationSyntax)memberDeclaration;
+
+                        ParseField(
+                            fieldDeclaration: fieldDeclarationMember,
+                            codeLocation: codeLocation,
+                            setRecord: setRecord);
+                    }
+                    break;
+
+                // デリゲートの宣言部なら
+                case SyntaxKind.DelegateDeclaration:
+                    {
+                        var delegateDeclarationMember = (DelegateDeclarationSyntax)memberDeclaration;
+
+                        ParseDelegate(
+                            delegateDeclaration: delegateDeclarationMember,
+                            codeLocation: codeLocation,
+                            setRecord: setRecord);
+                    }
+                    break;
+
+                // イベント・フィールド宣言
+                case SyntaxKind.EventFieldDeclaration:
+                    {
+                        var eventFieldDeclarationMember = (EventFieldDeclarationSyntax)memberDeclaration;
+
+                        ParseEventField(
+                            eventFieldDeclaration: eventFieldDeclarationMember,
+                            codeLocation: codeLocation,
+                            setRecord: setRecord);
+                    }
+                    break;
+
+                // コンストラクター宣言
+                case SyntaxKind.ConstructorDeclaration:
+                    {
+                        var constructorDeclarationMember = (ConstructorDeclarationSyntax)memberDeclaration;
+
+                        var record = ParseConstructor(
+                            constructorDeclaration: constructorDeclarationMember,
+                            codeLocation: codeLocation);
+
+                        setRecord(record);
+                    }
+                    break;
+
+                // デストラクター宣言
+                case SyntaxKind.DestructorDeclaration:
+                    {
+                        var destructorDeclarationMember = (DestructorDeclarationSyntax)memberDeclaration;
+
+                        var record = ParseDestructor(
+                            destructorDeclaration: destructorDeclarationMember,
+                            codeLocation: codeLocation);
+
+                        setRecord(record);
+                    }
+                    break;
+
+                // メソッドの宣言部なら
+                case SyntaxKind.MethodDeclaration:
+                    {
+                        var methodDeclarationMember = (MethodDeclarationSyntax)memberDeclaration;
+
+                        var record = ParseMethod(
+                            methodDeclaration: methodDeclarationMember,
+                            codeLocation: codeLocation);
+
+                        setRecord(record);
+                    }
+                    break;
+
+                // 不完全なメンバーなら
+                case SyntaxKind.IncompleteMember:
+                    {
+                        var incompleteMember = (IncompleteMemberSyntax)memberDeclaration;
+
+                        var record = ParseIncompleteMember(
+                            incompleteMember: incompleteMember,
+                            codeLocation: codeLocation);
+
+                        setRecord(record);
+                    }
+                    break;
+
+                default:
+                    {
+                        var message = $"[[What? 238]] rootMember.Kind(): {memberDeclaration.Kind().ToString()}";
+
+                        setRecord(new Record(
+                                kind: "[[What?]]",
+                                codeLocation: codeLocation,
+                                access: string.Empty,
+                                memberType: string.Empty,
+                                name: string.Empty,
+                                value: string.Empty,
+                                summary: message));
+
+                        Console.WriteLine(message);
+                    }
+                    break;
+            }
         }
 
         /// <summary>
@@ -224,174 +265,11 @@
             // クラスが２個定義されてるとか、列挙型が定義されてるとかに対応
             foreach (var memberDeclaration in namespaceDeclaration.Members)
             {
-                switch (memberDeclaration.Kind())
-                {
-                    // ネームスペース宣言
-                    case SyntaxKind.NamespaceDeclaration:
-                        {
-                            var namespaceDeclarationMember = (NamespaceDeclarationSyntax)memberDeclaration;
-
-                            ParseNamespaceDeclaration(
-                                setRecord: setRecord,
-                                namespaceDeclaration: namespaceDeclarationMember);
-
-                        }
-                        break;
-
-                    // クラス宣言
-                    case SyntaxKind.ClassDeclaration:
-                        {
-                            var classDeclarationMember = (ClassDeclarationSyntax)memberDeclaration;
-
-                            ParseClassDeclaration(
-                                setRecord: setRecord,
-                                codeLocation: codeLocation,
-                                classDeclaration: classDeclarationMember);
-                        }
-                        break;
-
-                    // インターフェース宣言
-                    case SyntaxKind.InterfaceDeclaration:
-                        {
-                            var interfaceDeclarationMember = (InterfaceDeclarationSyntax)memberDeclaration;
-
-                            // TODO インターフェース宣言部
-
-                            foreach (var programDeclarationMember in interfaceDeclarationMember.Members)
-                            {
-                                switch (programDeclarationMember.Kind())
-                                {
-                                    // フィールドの宣言部なら
-                                    case SyntaxKind.FieldDeclaration:
-                                        {
-                                            var fieldDeclaration = (FieldDeclarationSyntax)programDeclarationMember;
-
-                                            ParseField(
-                                                fieldDeclaration: fieldDeclaration,
-                                                codeLocation: codeLocation,
-                                                setRecord: setRecord);
-                                        }
-                                        break;
-
-                                    default:
-                                        break;
-                                }
-                            }
-                        }
-                        break;
-
-                    // 構造体宣言
-                    case SyntaxKind.StructDeclaration:
-                        {
-                            var structDeclarationMember = (StructDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseStruct(
-                                structDeclaration: structDeclarationMember,
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // 列挙型宣言
-                    case SyntaxKind.EnumDeclaration:
-                        {
-                            var enumDeclarationMember = (EnumDeclarationSyntax)memberDeclaration;
-
-                            ParseEnumDeclaration(
-                                setRecord: setRecord,
-                                codeLocation: codeLocation,
-                                enumDeclaration: enumDeclarationMember);
-                        }
-                        break;
-
-                    // コンストラクター宣言
-                    case SyntaxKind.ConstructorDeclaration:
-                        {
-                            var constructorDeclarationMember = (ConstructorDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseConstructor(
-                                constructorDeclaration: constructorDeclarationMember,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // デストラクター宣言
-                    case SyntaxKind.DestructorDeclaration:
-                        {
-                            var destructorDeclarationMember = (DestructorDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseDestructor(
-                                destructorDeclaration: destructorDeclarationMember,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // メソッドの宣言部なら
-                    case SyntaxKind.MethodDeclaration:
-                        {
-                            var methodDeclarationMember = (MethodDeclarationSyntax)memberDeclaration;
-
-                            var record = ParseMethod(
-                                methodDeclaration: methodDeclarationMember,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    // フィールドの宣言部なら
-                    case SyntaxKind.FieldDeclaration:
-                        {
-                            var fieldDeclarationMember = (FieldDeclarationSyntax)memberDeclaration;
-
-                            ParseField(
-                                fieldDeclaration: fieldDeclarationMember,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: codeLocation,
-                                setRecord: setRecord);
-                        }
-                        break;
-
-
-                    // 不完全なメンバーなら
-                    case SyntaxKind.IncompleteMember:
-                        {
-                            var incompleteMember = (IncompleteMemberSyntax)memberDeclaration;
-
-                            var record = ParseIncompleteMember(
-                                incompleteMember: incompleteMember,
-                                // ネームスペース.親クラス名　とつなげる
-                                codeLocation: codeLocation);
-
-                            setRecord(record);
-                        }
-                        break;
-
-                    default:
-                        {
-                            var message = $"[[What? 392]] memberDeclaration.Kind(): {memberDeclaration.Kind().ToString()}";
-
-                            setRecord(new Record(
-                                    kind: "[[What?]]",
-                                    codeLocation: codeLocation,
-                                    access: string.Empty,
-                                    memberType: string.Empty,
-                                    name: string.Empty,
-                                    value: string.Empty,
-                                    summary: message));
-
-                            Console.WriteLine(message);
-                        }
-                        break;
-                }
+                // メンバーを解析
+                ParseMember(
+                    setRecord: setRecord,
+                    memberDeclaration: memberDeclaration,
+                    codeLocation: codeLocation);
             }
         }
 
